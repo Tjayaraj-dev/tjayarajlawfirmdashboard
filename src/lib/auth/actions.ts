@@ -3,6 +3,12 @@
 import { z } from 'zod'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import {
+  clearDemoSession,
+  findDemoUser,
+  isDemoModeEnabled,
+  setDemoSession,
+} from '@/lib/auth/demo'
 
 const loginSchema = z.object({
   email: z.email({ message: 'Please enter a valid email address' }),
@@ -35,13 +41,13 @@ export async function loginAction(
     return { error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    return {
-      error: 'Authentication is not yet configured. Set Supabase keys in .env.local to enable sign-in.',
+  if (isDemoModeEnabled()) {
+    const user = findDemoUser(parsed.data.email, parsed.data.password)
+    if (!user) {
+      return { error: 'Invalid credentials. Demo accounts only — see the panel below.' }
     }
+    await setDemoSession(user)
+    redirect('/dashboard')
   }
 
   const supabase = await createClient()
@@ -52,6 +58,17 @@ export async function loginAction(
   }
 
   redirect('/dashboard')
+}
+
+export async function signOutAction(): Promise<void> {
+  if (isDemoModeEnabled()) {
+    await clearDemoSession()
+    redirect('/login')
+  }
+
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/login')
 }
 
 export async function forgotPasswordAction(

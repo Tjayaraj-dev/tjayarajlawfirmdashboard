@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { LoginForm } from '@/components/app/login-form'
+import { DEMO_USERS, isDemoModeEnabled } from '@/lib/auth/demo'
 
 export const metadata: Metadata = {
   title: 'Sign in · T. Jayaraj & Company',
@@ -85,14 +86,18 @@ export default function LoginPage() {
               className="flex justify-center lg:justify-end"
               style={{ animation: 'fade-up 1000ms ease-out 300ms both' }}
             >
-              <div className="w-full max-w-sm border border-white/10 bg-white/[0.04] p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl sm:p-9">
-                <div className="mb-7 flex items-center gap-3">
-                  <div className="h-px w-6 bg-brand-gold/70" />
-                  <p className="text-[10px] uppercase tracking-[0.4em] text-brand-gold/90">
-                    Counsel · Sign in
-                  </p>
+              <div className="w-full max-w-sm space-y-4">
+                <div className="border border-white/10 bg-white/[0.04] p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl sm:p-9">
+                  <div className="mb-7 flex items-center gap-3">
+                    <div className="h-px w-6 bg-brand-gold/70" />
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-brand-gold/90">
+                      Counsel · Sign in
+                    </p>
+                  </div>
+                  <LoginForm />
                 </div>
-                <LoginForm />
+
+                {isDemoModeEnabled() && <DemoCredentialsCard />}
               </div>
             </div>
           </div>
@@ -110,5 +115,41 @@ export default function LoginPage() {
         </footer>
       </div>
     </main>
+  )
+}
+
+function DemoCredentialsCard() {
+  return (
+    <div className="border border-brand-gold/25 bg-brand-gold/[0.06] p-5 backdrop-blur-md">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="h-1 w-1 animate-pulse rounded-full bg-brand-gold" />
+        <p className="text-[10px] uppercase tracking-[0.35em] text-brand-gold/90">
+          Demo Mode
+        </p>
+      </div>
+      <p className="mb-3 text-xs leading-relaxed text-white/65">
+        Supabase isn&rsquo;t wired yet — use either demo account below.
+      </p>
+      <div className="space-y-2.5">
+        {DEMO_USERS.map((u) => (
+          <div
+            key={u.id}
+            className="flex items-center justify-between gap-3 border-l-2 border-brand-gold/40 pl-3"
+          >
+            <div className="min-w-0">
+              <p className="font-display text-xs font-medium text-white">
+                {u.email}
+              </p>
+              <p className="font-mono text-[10px] text-white/45">
+                {u.password}
+              </p>
+            </div>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-brand-gold/70">
+              {u.role}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

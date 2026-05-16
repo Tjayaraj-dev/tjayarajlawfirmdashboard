@@ -1,19 +1,45 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/session'
+import { DEMO_COOKIE } from '@/lib/auth/demo'
+
+const DEMO_PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/auth']
 
 export async function proxy(request: NextRequest) {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    if (process.env.NODE_ENV === 'development') {
-      return NextResponse.next({ request })
+  const hasSupabase =
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!hasSupabase) {
+    if (process.env.NODE_ENV !== 'development') {
+      throw new Error(
+        'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in production'
+      )
     }
-    throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in production'
-    )
+    return demoGate(request)
   }
+
   return await updateSession(request)
+}
+
+function demoGate(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const isPublic = DEMO_PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  const hasDemoSession = !!request.cookies.get(DEMO_COOKIE)?.value
+
+  if (!hasDemoSession && !isPublic) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('next', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  if (hasDemoSession && pathname === '/login') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  return NextResponse.next({ request })
 }
 
 export const config = {
