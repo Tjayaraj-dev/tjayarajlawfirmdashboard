@@ -6,6 +6,7 @@ export type DemoUser = {
   email: string
   password: string
   name: string
+  firstName: string
   role: Role
 }
 
@@ -15,6 +16,7 @@ export const DEMO_USERS: readonly DemoUser[] = [
     email: 'admin@jayarajco.com',
     password: 'demo1234',
     name: 'T. Jayaraj',
+    firstName: 'Jayaraj',
     role: 'admin',
   },
   {
@@ -22,11 +24,12 @@ export const DEMO_USERS: readonly DemoUser[] = [
     email: 'staff@jayarajco.com',
     password: 'demo1234',
     name: 'Priya Kumar',
+    firstName: 'Priya',
     role: 'staff',
   },
 ] as const
 
-export type DemoSession = Pick<DemoUser, 'id' | 'email' | 'name' | 'role'>
+export type DemoSession = Pick<DemoUser, 'id' | 'email' | 'name' | 'firstName' | 'role'>
 
 export const DEMO_COOKIE = 'tjlaw_demo_session'
 const SEVEN_DAYS_SECONDS = 60 * 60 * 24 * 7
@@ -53,6 +56,7 @@ export async function setDemoSession(user: DemoUser): Promise<void> {
     id: user.id,
     email: user.email,
     name: user.name,
+    firstName: user.firstName,
     role: user.role,
   }
   cookieStore.set(DEMO_COOKIE, JSON.stringify(session), {
