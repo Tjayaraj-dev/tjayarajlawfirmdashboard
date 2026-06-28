@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { signOutAction } from '@/lib/auth/actions'
-import type { DemoSession } from '@/lib/auth/demo'
+import type { AppSession } from '@/lib/auth/current-user'
 import {
   LayoutDashboard,
   FolderOpen,
@@ -41,7 +41,7 @@ function SidebarContent({
   session,
   isDemoMode,
 }: {
-  session: DemoSession | null
+  session: AppSession | null
   isDemoMode: boolean
 }) {
   const initials = session?.name
@@ -150,7 +150,7 @@ export function Sidebar({
   session,
   isDemoMode,
 }: {
-  session: DemoSession | null
+  session: AppSession | null
   isDemoMode: boolean
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)

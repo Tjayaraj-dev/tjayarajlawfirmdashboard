@@ -1,0 +1,118 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: TJ
+          - generic [ref=e8]:
+            - paragraph [ref=e9]: T. JAYARAJ & CO.
+            - paragraph [ref=e10]: Command Centre
+        - navigation [ref=e11]:
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: Workspace
+            - generic [ref=e14]:
+              - link "Overview" [ref=e191] [cursor=pointer]:
+                - /url: /dashboard
+                - img [ref=e16]
+                - generic [ref=e21]: Overview
+              - link "Matters" [ref=e192] [cursor=pointer]:
+                - /url: /matters
+                - img [ref=e23]
+                - generic [ref=e25]: Matters
+              - link "Clients" [ref=e193] [cursor=pointer]:
+                - /url: /clients
+                - img [ref=e28]
+                - generic [ref=e33]: Clients
+              - link "Documents" [ref=e194] [cursor=pointer]:
+                - /url: /documents
+                - img [ref=e35]
+                - generic [ref=e38]: Documents
+              - link "Calendar" [ref=e195] [cursor=pointer]:
+                - /url: /calendar
+                - img [ref=e40]
+                - generic [ref=e42]: Calendar
+          - generic [ref=e43]:
+            - paragraph [ref=e44]: Admin
+            - generic [ref=e45]:
+              - link "Users" [ref=e196] [cursor=pointer]:
+                - /url: /users
+                - img [ref=e47]
+                - generic [ref=e59]: Users
+              - link "Case Types" [ref=e197] [cursor=pointer]:
+                - /url: /case-types
+                - img [ref=e61]
+                - generic [ref=e64]: Case Types
+              - link "Document Categories" [ref=e198] [cursor=pointer]:
+                - /url: /document-categories
+                - img [ref=e66]
+                - generic [ref=e71]: Document Categories
+              - link "Audit Log" [ref=e199] [cursor=pointer]:
+                - /url: /audit-log
+                - img [ref=e73]
+                - generic [ref=e75]: Audit Log
+              - link "Settings" [ref=e200] [cursor=pointer]:
+                - /url: /settings
+                - img [ref=e77]
+                - generic [ref=e80]: Settings
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: TJ
+            - generic [ref=e84]:
+              - paragraph [ref=e85]: T. Jayaraj
+              - generic [ref=e87]: admin
+          - button "Sign out" [ref=e201]:
+            - img [ref=e90]
+            - text: Sign out
+    - main [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - paragraph [ref=e96]: Client Vault
+          - heading "Clients" [level=1] [ref=e202]
+          - paragraph [ref=e98]: Individuals and corporate entities the firm acts for. Archived records are retained and restorable by admins.
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]:
+              - img
+              - textbox "Search clients…" [ref=e203]
+            - button "New client" [ref=e204]:
+              - img
+              - text: New client
+          - table [ref=e106]:
+            - rowgroup [ref=e107]:
+              - row "Name NRIC / Company no. Contact Added" [ref=e205]:
+                - columnheader "Name" [ref=e206]
+                - columnheader "NRIC / Company no." [ref=e207]
+                - columnheader "Contact" [ref=e208]
+                - columnheader "Added" [ref=e209]
+                - columnheader [ref=e113]
+            - rowgroup [ref=e114]:
+              - row "Krishnan a/l Raju individual — 019-8765432 23 Jun 2026" [ref=e210]:
+                - cell "Krishnan a/l Raju individual" [ref=e211]:
+                  - generic [ref=e117]:
+                    - generic [ref=e118]: Krishnan a/l Raju
+                    - generic [ref=e119]: individual
+                - cell "—" [ref=e212]
+                - cell "019-8765432" [ref=e213]
+                - cell "23 Jun 2026" [ref=e214]
+                - cell [ref=e123]:
+                  - button [ref=e125]:
+                    - img
+              - row "Tan Wei Ming individual — 012-3456789 23 Jun 2026" [ref=e215]:
+                - cell "Tan Wei Ming individual" [ref=e216]:
+                  - generic [ref=e217]:
+                    - generic [ref=e218]: Tan Wei Ming
+                    - generic [ref=e219]: individual
+                - cell "—" [ref=e220]
+                - cell "012-3456789" [ref=e221]
+                - cell "23 Jun 2026" [ref=e222]
+                - cell [ref=e223]:
+                  - button [ref=e225]:
+                    - img
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e226]:
+        - img [ref=e228]
+        - generic [ref=e232]: Client created
+  - button "Open Next.js Dev Tools" [ref=e131] [cursor=pointer]:
+    - img [ref=e132]
+  - alert [ref=e135]

@@ -57,6 +57,13 @@ export async function loginAction(
     return { error: error.message }
   }
 
+  // If the account has a verified TOTP factor, the password only gets them to
+  // aal1 — send them to the second-factor challenge before the app.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (aal?.currentLevel === 'aal1' && aal.nextLevel === 'aal2') {
+    redirect('/mfa')
+  }
+
   redirect('/dashboard')
 }
 

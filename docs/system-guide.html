@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>T. Jayaraj &amp; Company — System Guide</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --gold: #b08d57;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --bg-soft: #f7f7f5;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 11.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  h1, h2, h3, .display { font-family: Georgia, "Times New Roman", serif; }
+  .page { padding: 54px 60px; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  /* Cover */
+  .cover { height: 940px; display: flex; flex-direction: column; justify-content: space-between;
+           background: var(--navy); color: #fff; padding: 70px 64px; }
+  .cover .top { font-size: 12px; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+  .cover .tj { display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px;
+               border:1px solid rgba(176,141,87,.5); border-radius:8px; color: var(--gold);
+               font-family:Georgia,serif; font-size:20px; margin-bottom:26px; }
+  .cover h1 { font-size: 52px; line-height: 1.05; margin: 0 0 16px; font-weight: 500; }
+  .cover .sub { font-size: 15px; color: rgba(255,255,255,.75); max-width: 460px; }
+  .cover .meta { font-size: 12px; color: rgba(255,255,255,.55); letter-spacing:.04em; }
+  .cover .rule { width: 56px; height: 3px; background: var(--gold); margin: 22px 0; }
+
+  .kicker { font-size: 10.5px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+  h2.sec { font-size: 30px; color: var(--navy); margin: 0 0 4px; font-weight: 500; }
+  .sec-rule { width: 44px; height: 2px; background: var(--navy); opacity:.2; margin: 14px 0 22px; }
+  h3 { font-size: 16px; color: var(--navy); margin: 24px 0 6px; }
+  p { margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  strong { color: var(--navy); }
+
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin: 0 0 12px; background: #fff; }
+  .card h4 { margin: 0 0 4px; font-size: 13.5px; color: var(--navy); font-family: Georgia, serif; }
+  .card .tag { display:inline-block; font-size: 9px; letter-spacing:.12em; text-transform:uppercase;
+               color: var(--gold); border:1px solid rgba(176,141,87,.4); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+
+  pre.flow { background: var(--navy); color: #e8edf3; font-family: "SF Mono", Menlo, monospace; font-size: 10px;
+             line-height: 1.5; padding: 18px 20px; border-radius: 8px; white-space: pre; overflow: hidden; }
+  .gold { color: var(--gold); }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td { font-size: 11px; }
+
+  ol.steps { margin: 6px 0 12px; padding-left: 0; counter-reset: s; list-style: none; }
+  ol.steps li { position: relative; padding: 4px 0 4px 34px; margin: 0 0 4px; }
+  ol.steps li:before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 3px;
+       width: 22px; height: 22px; background: var(--navy); color: #fff; border-radius: 50%;
+       font-size: 11px; display:flex; align-items:center; justify-content:center; font-family: Georgia, serif; }
+
+  .pill { display:inline-block; font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px;
+          border-radius: 20px; }
+  .pill.ok { background:#ecfdf5; color:#047857; }
+  .pill.next { background:#fef3c7; color:#92600a; }
+
+  .foot { font-size: 9.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; margin-top: 28px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div>
+    <div class="top">Aurexis Solution &nbsp;·&nbsp; Legal Operations Digitalization</div>
+  </div>
+  <div>
+    <div class="tj">TJ</div>
+    <h1>System Guide</h1>
+    <div class="rule"></div>
+    <div class="sub">A complete, plain-language walkthrough of the T. Jayaraj &amp; Company Command Centre — what every part is, how it works, and how it all connects.</div>
+  </div>
+  <div class="meta">
+    Prepared for T. JAYARAJ &amp; COMPANY &nbsp;·&nbsp; Advocates &amp; Solicitors<br/>
+    Prepared by AUREXIS SOLUTION &nbsp;·&nbsp; Module 1 — Client Vault
+  </div>
+</div>
+
+<!-- 1. WHAT THIS IS -->
+<div class="page">
+  <p class="kicker">01 — Orientation</p>
+  <h2 class="sec">What this system is</h2>
+  <div class="sec-rule"></div>
+  <p>The Command Centre replaces paper files and scattered spreadsheets with one secure, cloud-based home for the firm's clients, cases, court dates and documents. It runs in any web browser — desktop or mobile — and every member of the firm has their own login.</p>
+  <p>It is built around a single, simple idea that mirrors how the firm already works:</p>
+  <pre class="flow"><span class="gold">CLIENT</span>  ──▶  <span class="gold">MATTER</span> (the case file)  ──┬──▶  <span class="gold">EVENTS</span>   (the 5 attendance forms)
+                                    └──▶  <span class="gold">DOCUMENTS</span> (pleadings, affidavits …)
+
+         CALENDAR   ◀── draws every hearing &amp; next date from Matters + Events
+         DASHBOARD  ◀── summarises the whole firm at a glance
+         AUDIT LOG  ◀── records every action and every file viewed</pre>
+  <p>A <strong>client</strong> can have many <strong>cases</strong> over time. Each case carries its <strong>events</strong> (what happened in court, prison visits, interviews) and its <strong>documents</strong>. Every other screen is either a way <em>into</em> that chain, or a <em>view</em> that reads from it.</p>
+
+  <h3>Two kinds of user</h3>
+  <table>
+    <tr><th>Role</th><th>Sees</th><th>Can do</th></tr>
+    <tr><td><strong>Admin</strong> (e.g. Mr Jayaraj)</td><td>Everything, including admin screens &amp; the audit log</td><td>Full control — manage users, configure the firm, permanently delete, freeze the system</td></tr>
+    <tr><td><strong>Staff</strong> (lawyers / clerks)</td><td>The day-to-day workspace only</td><td>Create &amp; edit clients, cases, events, documents; archive (not permanently delete)</td></tr>
+  </table>
+  <p class="muted">Access isn't just hidden on screen — the database itself enforces who can see what. Even outside the app, the data stays locked to the right person.</p>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 1</div>
+</div>
+
+<!-- 2. THE SCREENS A-Z (part 1) -->
+<div class="page">
+  <p class="kicker">02 — The screens, A to Z</p>
+  <h2 class="sec">Everyday workspace</h2>
+  <div class="sec-rule"></div>
+
+  <div class="card">
+    <h4>Overview (Dashboard) <span class="tag">Home</span></h4>
+    <p>The landing screen after sign-in. Shows live counts — active cases, hearings in the next fortnight, total clients, total documents — plus a list of upcoming hearings and a running activity feed. It stores nothing itself; it <strong>reads</strong> from everything below, so it's always current.</p>
+  </div>
+
+  <div class="card">
+    <h4>Clients <span class="tag">Who the firm acts for</span></h4>
+    <p>Individuals and companies. The intake form captures an auto-assigned <strong>Client ID</strong> (e.g. TJC-C-0007), an old-file <strong>reference number</strong>, type, NRIC / company no., and separate <strong>phone, email and address</strong>. A single client can hold many cases. You can even open the client's first case directly from the intake form.</p>
+  </div>
+
+  <div class="card">
+    <h4>Matters <span class="tag">The case ledger — the heart</span></h4>
+    <p>Every case file the firm holds. Each matter <strong>belongs to one client</strong> and records the court, accused, charges, prosecutor / DPP, status and next hearing. A unique <strong>file reference</strong> (TJC ref) identifies it. Clicking a matter opens its detail page.</p>
+  </div>
+
+  <div class="card">
+    <h4>Inside a Matter <span class="tag">Events + Documents live here</span></h4>
+    <p>The case file's detail page holds two things:</p>
+    <p><strong>· Events timeline</strong> — the five firm forms, logged as the case progresses: <em>Court Attendance, Zoom Session, Prison Attendance, Client Interview, Minutes of Proceedings.</em> Each event can carry a <strong>next date</strong>.</p>
+    <p><strong>· Documents</strong> — files filed against this case, with automatic <strong>version history</strong> (re-uploading a file keeps the old copy).</p>
+  </div>
+
+  <div class="card">
+    <h4>Documents (vault) <span class="tag">Firm-wide</span></h4>
+    <p>Every document across every case in one searchable list — pleadings, affidavits, KYC, evidence. Files always belong to a matter; this is the bird's-eye view. You can also upload here by picking the matter first.</p>
+  </div>
+
+  <div class="card">
+    <h4>Calendar <span class="tag">The diary</span></h4>
+    <p>A month view that <strong>automatically</strong> shows every hearing and every event's "next date" across the firm — colour-coded by type. You don't type into it directly; it draws from the matters and events. Log a court date on a case and it appears here instantly. Each entry links straight back to its matter.</p>
+  </div>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 2</div>
+</div>
+
+<!-- 3. ADMIN SCREENS -->
+<div class="page">
+  <p class="kicker">02 — The screens, A to Z (cont.)</p>
+  <h2 class="sec">Administration &amp; oversight</h2>
+  <div class="sec-rule"></div>
+  <p class="muted">Visible to admins only. Staff never see these.</p>
+
+  <div class="card">
+    <h4>Users</h4>
+    <p>Every lawyer and clerk with their own login and role. Admins promote or demote between Admin and Staff here. Per-person logins are what make the audit trail meaningful.</p>
+  </div>
+  <div class="card">
+    <h4>Case Types</h4>
+    <p>The firm's editable list of practice areas (Criminal Defence, Civil Litigation, Conveyancing …) used to categorise matters. Add, rename or remove to match the firm's taxonomy.</p>
+  </div>
+  <div class="card">
+    <h4>Document Categories</h4>
+    <p>The filing labels for the vault — seeded with six defaults: Pleadings, Affidavits, Correspondence, KYC, Evidence, Invoices. Fully editable.</p>
+  </div>
+  <div class="card">
+    <h4>Audit Log</h4>
+    <p>An append-only record of every action — who created, edited, archived, deleted or <strong>viewed/downloaded</strong> a record, and when. This is the Bar Council answer to "who saw this file." It cannot be altered or erased.</p>
+  </div>
+  <div class="card">
+    <h4>Settings</h4>
+    <p>Firm profile (name, Bar Council no., retention years, sender email, brand colour), each user's <strong>two-factor authentication</strong>, and the <strong>Emergency Read-Only</strong> switch.</p>
+  </div>
+
+  <h3>How it all connects</h3>
+  <pre class="flow"><span class="gold">Users</span> log in ──▶ role decides what they see (enforced by the database)
+
+<span class="gold">Client</span> ─< has many >─ <span class="gold">Matters</span> ─< has many >─ <span class="gold">Events</span>
+                                       └─< has many >─ <span class="gold">Documents</span>
+
+Case Types  ──tag──▶ Matters        Document Categories ──tag──▶ Documents
+Calendar  reads ◀ Matters + Events        Dashboard reads ◀ everything
+Audit Log  records ◀ every action, everywhere</pre>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 3</div>
+</div>
+
+<!-- 4. A REAL CASE WALKTHROUGH -->
+<div class="page">
+  <p class="kicker">03 — How a real case flows</p>
+  <h2 class="sec">From walk-in to hearing</h2>
+  <div class="sec-rule"></div>
+  <ol class="steps">
+    <li><strong>A client walks in.</strong> Create the <strong>Client</strong> via the intake form. If they're bringing a case, open their first <strong>Matter</strong> in the same step.</li>
+    <li><strong>The Matter becomes the case file</strong> — court, accused, charges, prosecutor/DPP, status, file reference.</li>
+    <li><strong>As the case runs, counsel logs Events</strong> on the matter — a court attendance, a prison visit, a client interview. Each event can set the <strong>next date</strong>.</li>
+    <li><strong>Documents are uploaded</strong> to the matter — affidavits, pleadings — each new version kept.</li>
+    <li><strong>The Calendar updates automatically.</strong> Every next date and hearing now shows in the month diary, colour-coded, linked back to the case.</li>
+    <li><strong>The Dashboard summarises</strong> the whole firm — what's active, what's coming, who did what.</li>
+    <li><strong>Everything is recorded</strong> in the Audit Log — silently, permanently.</li>
+  </ol>
+
+  <h3>Why "next date" matters</h3>
+  <p>When counsel logs a court, Zoom or proceedings event and fills in the next date, the system <strong>also updates the case's headline "next hearing"</strong> — so the matters list, the calendar and the dashboard all stay in step without anyone re-typing it. One entry, everywhere it needs to be.</p>
+
+  <h3>Archive vs. delete</h3>
+  <table>
+    <tr><th>Action</th><th>Who</th><th>Effect</th></tr>
+    <tr><td>Archive</td><td>Any staff</td><td>Hidden from view but fully recoverable. Nothing is lost.</td></tr>
+    <tr><td>Restore</td><td>Admin</td><td>Brings an archived record back.</td></tr>
+    <tr><td>Delete permanently</td><td>Admin only</td><td>Destroys the record and its files for good — logged in the audit trail first.</td></tr>
+  </table>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 4</div>
+</div>
+
+<!-- 5. SECURITY -->
+<div class="page">
+  <p class="kicker">04 — The protection layer</p>
+  <h2 class="sec">Security &amp; compliance</h2>
+  <div class="sec-rule"></div>
+  <p>Much of the system's value is invisible — it sits underneath every screen, protecting the firm's most sensitive asset: its client data.</p>
+
+  <div class="two">
+    <div class="card"><h4>Per-person logins</h4><p>No shared passwords. Every action is attributable to a named person — which is what makes the audit log, and PI-insurance, meaningful.</p></div>
+    <div class="card"><h4>Two-factor authentication</h4><p>Admin accounts require a 6-digit code from an authenticator app, not just a password.</p></div>
+    <div class="card"><h4>Database-enforced access</h4><p>Row-Level Security: the database itself decides who sees what. Even if the app were bypassed, the data stays locked.</p></div>
+    <div class="card"><h4>Full audit trail</h4><p>Every view, edit, download and deletion is recorded, append-only. The Bar Council "who saw this file" answer.</p></div>
+    <div class="card"><h4>Signed-link documents</h4><p>Files are never public. Download links are generated on demand and expire within 60 seconds.</p></div>
+    <div class="card"><h4>Soft-delete by default</h4><p>Records are archived, not destroyed — protecting against accidental and malicious loss.</p></div>
+    <div class="card"><h4>Emergency Read-Only Mode</h4><p>One switch freezes all changes firm-wide during a dispute or incident, while keeping everything viewable.</p></div>
+    <div class="card"><h4>Singapore region &amp; backups</h4><p>Data hosted in-region with daily backups, point-in-time recovery and an independent off-site copy (triple-redundant).</p></div>
+  </div>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 5</div>
+</div>
+
+<!-- 6. SCOPE & ROADMAP -->
+<div class="page">
+  <p class="kicker">05 — Scope &amp; what's next</p>
+  <h2 class="sec">Module 1 today, and the road ahead</h2>
+  <div class="sec-rule"></div>
+  <p>This delivery is <strong>Module 1 — the Client Vault</strong>: the secure foundation for clients, cases, court dates and documents. It is complete and, in several areas, beyond the original scope (full case ledger, all five attendance forms, calendar, audit viewer, two-factor authentication, emergency read-only mode).</p>
+
+  <h3>Included in Module 1</h3>
+  <table>
+    <tr><th>Capability</th><th>Status</th></tr>
+    <tr><td>Secure client database (intake, IDs, contacts)</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Case / matter ledger with criminal-practice fields</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Five attendance / proceeding forms</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Firm-wide calendar / diary</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Versioned document vault, signed-link access</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Audit log, two-factor auth, emergency read-only</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Automated notifications (hearing reminders)</td><td><span class="pill next">At launch</span></td></tr>
+    <tr><td>Triple-redundant backups (live)</td><td><span class="pill next">At launch</span></td></tr>
+  </table>
+
+  <h3>Natural next modules (future scope)</h3>
+  <table>
+    <tr><th>Module</th><th>What it adds</th></tr>
+    <tr><td><strong>Module 2 — Billing &amp; Trust Accounts</strong></td><td>Time tracking, fee notes, invoicing, and a client / trust account ledger (Solicitors' Accounts Rules compliance).</td></tr>
+    <tr><td><strong>Module 3 — Critical Dates</strong></td><td>Limitation-period &amp; deadline register with reminders — malpractice protection.</td></tr>
+    <tr><td><strong>Module 4 — Intake &amp; Productivity</strong></td><td>Conflict-of-interest checks, a contacts directory (courts, counsel, witnesses), tasks, and document templates.</td></tr>
+  </table>
+  <p class="muted">Each module slots onto the same secure foundation, quoted separately.</p>
+
+  <div class="foot">T. Jayaraj &amp; Company — System Guide &nbsp;·&nbsp; Aurexis Solution &nbsp;·&nbsp; Page 6</div>
+</div>
+
+</body>
+</html>

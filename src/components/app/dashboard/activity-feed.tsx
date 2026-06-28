@@ -5,30 +5,40 @@ import {
   UserPlus,
   CalendarClock,
   StickyNote,
-  CheckCircle2,
   type LucideIcon,
 } from 'lucide-react'
-import { activity, type ActivityKind } from '@/lib/mock/data'
 
-const ICON_BY_KIND: Record<ActivityKind, LucideIcon> = {
-  doc_uploaded: FileUp,
-  matter_opened: FolderPlus,
-  client_added: UserPlus,
-  hearing_rescheduled: CalendarClock,
-  note_added: StickyNote,
-  matter_closed: CheckCircle2,
+export type ActivityEntry = {
+  id: string
+  actor: string
+  action: string
+  resourceType: string
+  at: string
 }
 
-const LABEL_BY_KIND: Record<ActivityKind, string> = {
-  doc_uploaded: 'uploaded a document',
-  matter_opened: 'opened a matter',
-  client_added: 'added a client',
-  hearing_rescheduled: 'rescheduled a hearing',
-  note_added: 'added a note',
-  matter_closed: 'closed a matter',
+const ICON_BY_RESOURCE: Record<string, LucideIcon> = {
+  clients: UserPlus,
+  matters: FolderPlus,
+  case_events: CalendarClock,
+  documents: FileUp,
 }
 
-export function ActivityFeed() {
+const NOUN: Record<string, string> = {
+  clients: 'a client',
+  matters: 'a matter',
+  case_events: 'an event',
+  documents: 'a document',
+}
+
+const VERB: Record<string, string> = {
+  create: 'added',
+  update: 'updated',
+  soft_delete: 'archived',
+  restore: 'restored',
+  download: 'downloaded',
+}
+
+export function ActivityFeed({ entries }: { entries: ActivityEntry[] }) {
   return (
     <section
       className="rounded-lg border border-brand-navy/10 bg-white shadow-[0_1px_3px_rgba(15,23,50,0.04)]"
@@ -44,9 +54,16 @@ export function ActivityFeed() {
       </header>
 
       <ol className="divide-y divide-brand-navy/[0.06]">
-        {activity.map((entry) => {
-          const Icon = ICON_BY_KIND[entry.kind]
+        {entries.length === 0 && (
+          <li className="px-6 py-10 text-center text-sm text-muted-foreground">
+            No activity yet.
+          </li>
+        )}
+        {entries.map((entry) => {
+          const Icon = ICON_BY_RESOURCE[entry.resourceType] ?? StickyNote
           const ago = formatDistanceToNow(new Date(entry.at), { addSuffix: true })
+          const verb = VERB[entry.action] ?? entry.action
+          const noun = NOUN[entry.resourceType] ?? entry.resourceType
           return (
             <li key={entry.id} className="flex items-start gap-3 px-6 py-3.5">
               <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-brand-navy/[0.08] bg-brand-navy/[0.025] text-brand-navy/70">
@@ -56,23 +73,8 @@ export function ActivityFeed() {
                 <p className="text-[13px] leading-snug text-brand-navy">
                   <span className="font-medium">{entry.actor}</span>{' '}
                   <span className="text-muted-foreground">
-                    {LABEL_BY_KIND[entry.kind]}
+                    {verb} {noun}
                   </span>
-                </p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  <span className="italic text-brand-navy/70">
-                    {entry.detail}
-                  </span>
-                  {entry.matterRef && (
-                    <>
-                      <span className="mx-1.5 text-muted-foreground/40">
-                        ·
-                      </span>
-                      <span className="font-mono text-[10px]">
-                        {entry.matterRef}
-                      </span>
-                    </>
-                  )}
                 </p>
                 <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
                   {ago}

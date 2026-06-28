@@ -1,6 +1,4 @@
-import { matters } from '@/lib/mock/data'
-
-type HearingRow = {
+export type HearingRow = {
   matterId: string
   fileRef: string
   title: string
@@ -9,27 +7,6 @@ type HearingRow = {
   time: string
   kind: string
   court: string
-}
-
-function getUpcomingHearings(): HearingRow[] {
-  const rows: HearingRow[] = []
-  for (const m of matters) {
-    if (m.nextHearing) {
-      rows.push({
-        matterId: m.id,
-        fileRef: m.fileRef,
-        title: m.title,
-        clientName: m.clientName,
-        date: m.nextHearing.date,
-        time: m.nextHearing.time,
-        kind: m.nextHearing.kind,
-        court: m.nextHearing.court,
-      })
-    }
-  }
-  return rows.sort((a, b) =>
-    `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`)
-  )
 }
 
 function groupByDay(rows: HearingRow[]) {
@@ -60,8 +37,7 @@ function formatDay(dateStr: string): {
   }
 }
 
-export function UpcomingHearings() {
-  const rows = getUpcomingHearings()
+export function UpcomingHearings({ rows }: { rows: HearingRow[] }) {
   const groups = groupByDay(rows)
 
   return (
@@ -79,6 +55,11 @@ export function UpcomingHearings() {
       </header>
 
       <div className="divide-y divide-brand-navy/[0.06]">
+        {groups.length === 0 && (
+          <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+            No upcoming hearings scheduled.
+          </p>
+        )}
         {groups.map(([date, items]) => {
           const day = formatDay(date)
           return (
