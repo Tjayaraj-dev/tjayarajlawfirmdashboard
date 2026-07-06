@@ -29,17 +29,19 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Sidebar session={session} isDemoMode={isDemoModeEnabled()} />
-      <main className="min-h-screen flex-1 overflow-x-hidden">
-        {readOnly && (
-          <div className="sticky top-0 z-20 flex items-center justify-center gap-2 bg-oxblood px-4 py-2 text-center text-xs font-medium text-white">
-            <span className="inline-block size-1.5 animate-pulse rounded-full bg-white" />
-            Emergency read-only mode is active — changes are disabled firm-wide.
-          </div>
-        )}
-        {children}
-      </main>
+      <div className="lg:pl-64">
+        <main className="min-h-screen overflow-x-hidden">
+          {readOnly && (
+            <div className="sticky top-0 z-20 flex items-center justify-center gap-2 bg-oxblood px-4 py-2 text-center text-xs font-medium text-white">
+              <span className="inline-block size-1.5 animate-pulse rounded-full bg-white" />
+              Emergency read-only mode is active — changes are disabled firm-wide.
+            </div>
+          )}
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

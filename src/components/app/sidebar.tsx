@@ -165,13 +165,11 @@ export function Sidebar({
 
   return (
     <>
-      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/[0.05] lg:block">
-        <div className="fixed inset-y-0 left-0 w-64">
-          <SidebarContent session={session} isDemoMode={isDemoMode} />
-        </div>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-white/[0.05] lg:block">
+        <SidebarContent session={session} isDemoMode={isDemoMode} />
       </aside>
 
-      <div className="flex items-center justify-between border-b border-brand-navy/10 bg-white px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-brand-navy/10 bg-white px-4 py-3 lg:hidden">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger
             aria-label="Open navigation"
