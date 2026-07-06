@@ -7,22 +7,22 @@ export const MATTER_STATUSES = [
   { value: 'closed', label: 'Closed' },
 ] as const
 
+// Core matter fields. Case-type-specific fields (accused, plaintiff, committal
+// sections, etc.) are driven by case-type-config and stored in custom_fields.
 export const matterFormSchema = z.object({
   client_id: z.string().uuid('Select a client'),
   file_ref: z.string().trim().min(1, 'File reference is required').max(100),
   title: z.string().trim().min(1, 'Title is required').max(300),
+  case_type_id: z.string().uuid().optional().or(z.literal('')),
+  appointment_type: z
+    .enum(['client_appointed', 'court_appointed'])
+    .optional()
+    .or(z.literal('')),
+  court: z.string().trim().max(200).optional(),
   status: z.enum(['active', 'on_hold', 'pending_filing', 'closed']),
   opened_at: z.string().min(1, 'Opened date is required'),
-  // Criminal-defence fields surfaced by the firm's attendance/proceedings forms.
-  court: z.string().trim().max(200).optional(),
-  case_no_committal: z.string().trim().max(100).optional(),
-  case_no_trial: z.string().trim().max(100).optional(),
-  accused: z.string().trim().max(300).optional(),
-  charges: z.string().trim().max(2000).optional(),
-  prosecutor_dpp: z.string().trim().max(200).optional(),
-  opposing_counsel: z.string().trim().max(200).optional(),
-  description: z.string().trim().max(2000).optional(),
   next_hearing_at: z.string().optional(),
+  description: z.string().trim().max(2000).optional(),
 })
 
 export type MatterFormValues = z.infer<typeof matterFormSchema>
@@ -32,16 +32,12 @@ export function emptyMatterForm(): MatterFormValues {
     client_id: '',
     file_ref: '',
     title: '',
+    case_type_id: '',
+    appointment_type: '',
+    court: '',
     status: 'active',
     opened_at: new Date().toISOString().slice(0, 10),
-    court: '',
-    case_no_committal: '',
-    case_no_trial: '',
-    accused: '',
-    charges: '',
-    prosecutor_dpp: '',
-    opposing_counsel: '',
-    description: '',
     next_hearing_at: '',
+    description: '',
   }
 }

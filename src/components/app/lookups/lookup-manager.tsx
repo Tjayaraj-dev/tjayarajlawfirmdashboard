@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createLookup, renameLookup, deleteLookup } from '@/lib/lookups/actions'
 
-type LookupTable = 'case_types' | 'document_categories'
+type LookupTable = 'case_types' | 'document_categories' | 'courts'
 type Row = { id: string; name: string; slug: string }
 
 export function LookupManager({

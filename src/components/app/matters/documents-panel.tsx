@@ -39,13 +39,7 @@ function fmtSize(bytes: number | null) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
+import { formatDate as fmtDate } from '@/lib/format-date'
 
 export function DocumentsPanel({
   matterId,
@@ -139,9 +133,13 @@ export function DocumentsPanel({
         <input
           ref={fileRef}
           type="file"
-          className="max-w-xs flex-1 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-brand-navy file:px-3 file:py-1.5 file:text-xs file:text-white"
+          className="max-w-xs flex-1 cursor-pointer rounded-lg border border-input bg-white p-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/30 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-brand-navy file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white"
         />
-        <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? '')}>
+        <Select
+          value={categoryId || null}
+          onValueChange={(v) => setCategoryId(v ?? '')}
+          items={categories.map((c) => ({ value: c.id, label: c.name }))}
+        >
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Category (optional)" />
           </SelectTrigger>

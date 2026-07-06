@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CalendarBoard, type CalendarItem } from '@/components/app/calendar/calendar-board'
-import { EVENT_TYPE_MAP } from '@/lib/case-events/config'
+import { EVENT_TYPE_MAP, type CaseEventType } from '@/lib/case-events/config'
 
 function localDate(iso: string): { date: string; time: string } {
   const d = new Date(iso)
@@ -27,10 +27,15 @@ export default async function CalendarPage() {
       .is('deleted_at', null),
     supabase
       .from('matters')
-      .select('id, file_ref, title')
+      .select('id, file_ref, title, client_id, client:clients(name)')
       .is('deleted_at', null)
       .order('file_ref'),
   ])
+
+  const matterOptions = (allMatters ?? []).map((m) => {
+    const c = Array.isArray(m.client) ? m.client[0] : m.client
+    return { id: m.id, file_ref: m.file_ref, title: m.title, client_id: m.client_id ?? '', client_name: c?.name ?? '' }
+  })
 
   const items: CalendarItem[] = []
   const seen = new Set<string>()
@@ -44,10 +49,10 @@ export default async function CalendarPage() {
       id: `ev-${e.id}`,
       date,
       time: null,
-      label: e.next_set_for || EVENT_TYPE_MAP[e.event_type].label,
+      label: e.next_set_for || EVENT_TYPE_MAP[e.event_type as CaseEventType]?.label || e.event_type,
       fileRef: m?.file_ref ?? '',
       matterId: e.matter_id,
-      kind: EVENT_TYPE_MAP[e.event_type].label,
+      kind: EVENT_TYPE_MAP[e.event_type as CaseEventType]?.label || e.event_type,
     })
   }
 
@@ -80,7 +85,7 @@ export default async function CalendarPage() {
         </p>
       </header>
 
-      <CalendarBoard items={items} matters={allMatters ?? []} />
+      <CalendarBoard items={items} matters={matterOptions} />
     </div>
   )
 }

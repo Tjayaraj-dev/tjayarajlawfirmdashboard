@@ -7,21 +7,22 @@ import { matterFormSchema, type MatterFormValues } from './schema'
 
 export type ActionResult = { error: string | null }
 
-function toRow(values: MatterFormValues) {
+function toRow(values: MatterFormValues, customFields: Record<string, string>) {
+  const cleaned: Record<string, string> = {}
+  for (const [k, v] of Object.entries(customFields)) {
+    if (v?.trim()) cleaned[k] = v.trim()
+  }
   return {
     client_id: values.client_id,
     file_ref: values.file_ref,
     title: values.title,
+    case_type_id: values.case_type_id || null,
+    appointment_type: values.appointment_type || null,
+    court: values.court || null,
     status: values.status,
     opened_at: values.opened_at,
-    court: values.court || null,
-    case_no_committal: values.case_no_committal || null,
-    case_no_trial: values.case_no_trial || null,
-    accused: values.accused || null,
-    charges: values.charges || null,
-    prosecutor_dpp: values.prosecutor_dpp || null,
-    opposing_counsel: values.opposing_counsel || null,
     description: values.description || null,
+    custom_fields: cleaned,
     next_hearing_at: values.next_hearing_at
       ? new Date(values.next_hearing_at).toISOString()
       : null,
@@ -36,7 +37,8 @@ function friendly(error: { code?: string; message: string }): string {
 }
 
 export async function createMatterRecord(
-  values: MatterFormValues
+  values: MatterFormValues,
+  customFields: Record<string, string> = {}
 ): Promise<ActionResult> {
   const parsed = matterFormSchema.safeParse(values)
   if (!parsed.success) {
@@ -50,7 +52,7 @@ export async function createMatterRecord(
   if (!user) return { error: 'Not authenticated' }
 
   const { error } = await supabase.from('matters').insert({
-    ...toRow(parsed.data),
+    ...toRow(parsed.data, customFields),
     assigned_to: user.id,
     created_by: user.id,
   })
@@ -62,7 +64,8 @@ export async function createMatterRecord(
 
 export async function updateMatterRecord(
   id: string,
-  values: MatterFormValues
+  values: MatterFormValues,
+  customFields: Record<string, string> = {}
 ): Promise<ActionResult> {
   const parsed = matterFormSchema.safeParse(values)
   if (!parsed.success) {
@@ -72,7 +75,7 @@ export async function updateMatterRecord(
   const supabase = await createClient()
   const { error } = await supabase
     .from('matters')
-    .update(toRow(parsed.data))
+    .update(toRow(parsed.data, customFields))
     .eq('id', id)
   if (error) return { error: friendly(error) }
 

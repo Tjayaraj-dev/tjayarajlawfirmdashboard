@@ -7,10 +7,17 @@ import { EVENT_TYPE_MAP, type CaseEventType } from './config'
 
 export type ActionResult = { error: string | null }
 
+// Logging one of these with a "next date" also bumps the matter's headline
+// next hearing (so the matters list + calendar stay current).
 const COURTROOM: CaseEventType[] = [
   'court_attendance',
-  'zoom_attendance',
+  'civil_court_attendance',
+  'advisory_board',
+  'remand_proceeding',
   'minutes_of_proceedings',
+  'zoom_appellate',
+  'zoom_trial',
+  'zoom_remand',
 ]
 
 export async function createCaseEvent(

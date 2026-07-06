@@ -28,8 +28,10 @@ import {
   EVENT_TYPE_MAP,
   type CaseEventType,
   type FieldDef,
+  type EventTypeConfig,
 } from '@/lib/case-events/config'
 import { createCaseEvent } from '@/lib/case-events/actions'
+import { ClientMatterPicker, type MatterOption } from './client-matter-picker'
 
 function nowLocal(): string {
   const dt = new Date()
@@ -72,24 +74,28 @@ function FieldControl({
   )
 }
 
-export type MatterOption = { id: string; file_ref: string; title: string }
+export type { MatterOption } from './client-matter-picker'
 
 export function EventLogDialog({
   open,
   onOpenChange,
   matterId,
   matters,
+  templates = EVENT_TYPES,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   // Fixed when opened from a matter; otherwise pick from `matters` (calendar).
   matterId?: string
   matters?: MatterOption[]
+  // Limit which templates this dialog offers (e.g. Zoom page = Zoom only).
+  templates?: EventTypeConfig[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [type, setType] = useState<CaseEventType>('court_attendance')
+  const [type, setType] = useState<CaseEventType>(templates[0]?.type ?? 'court_attendance')
   const [values, setValues] = useState<Record<string, string>>({})
+  const [pickedClient, setPickedClient] = useState('')
   const [pickedMatter, setPickedMatter] = useState('')
 
   const cfg = EVENT_TYPE_MAP[type]
@@ -100,7 +106,10 @@ export function EventLogDialog({
   useEffect(() => {
     if (open) {
       setValues({ occurred_at: nowLocal() })
-      if (!matterId) setPickedMatter('')
+      if (!matterId) {
+        setPickedClient('')
+        setPickedMatter('')
+      }
     }
   }, [open, type, matterId])
 
@@ -138,31 +147,27 @@ export function EventLogDialog({
 
         <div className="space-y-5">
           {needsPicker && (
-            <div className="space-y-1.5">
-              <Label htmlFor="ev_matter">Matter</Label>
-              <Select value={pickedMatter} onValueChange={(v) => setPickedMatter(v ?? '')}>
-                <SelectTrigger id="ev_matter">
-                  <SelectValue placeholder="Select a matter" />
-                </SelectTrigger>
-                <SelectContent>
-                  {matters!.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.file_ref} — {m.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <ClientMatterPicker
+              matters={matters!}
+              clientId={pickedClient}
+              onClientChange={setPickedClient}
+              matterId={pickedMatter}
+              onMatterChange={setPickedMatter}
+            />
           )}
 
           <div className="space-y-1.5">
             <Label htmlFor="ev_type">Form type</Label>
-            <Select value={type} onValueChange={(v) => setType((v ?? 'court_attendance') as CaseEventType)}>
+            <Select
+              value={type}
+              onValueChange={(v) => setType((v ?? 'court_attendance') as CaseEventType)}
+              items={templates.map((e) => ({ value: e.type, label: e.label }))}
+            >
               <SelectTrigger id="ev_type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {EVENT_TYPES.map((e) => (
+                {templates.map((e) => (
                   <SelectItem key={e.type} value={e.type}>
                     {e.label}
                   </SelectItem>

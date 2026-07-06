@@ -62,6 +62,52 @@ export async function uploadDocument(
   return { error: null }
 }
 
+// Attach a scanned file directly to a case event (the signed sheet on its
+// digital record). Same storage + versioning as uploadDocument, but linked to
+// the event as well as the matter.
+export async function uploadEventDocument(
+  matterId: string,
+  eventId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: 'Choose a file to attach' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const path = `${matterId}/${crypto.randomUUID()}-${file.name}`
+  const { error: upErr } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, { contentType: file.type || undefined })
+  if (upErr) return { error: upErr.message }
+
+  const { error } = await supabase.from('documents').insert({
+    matter_id: matterId,
+    case_event_id: eventId,
+    filename: file.name,
+    storage_path: path,
+    version: 1,
+    mime_type: file.type || null,
+    file_size: file.size,
+    uploaded_by: user.id,
+  })
+  if (error) {
+    await supabase.storage.from(BUCKET).remove([path])
+    return { error: error.message }
+  }
+
+  revalidatePath(`/matters/${matterId}`)
+  revalidatePath('/attendance')
+  revalidatePath('/zoom')
+  return { error: null }
+}
+
 // Signed URLs only — the bucket is private. Every download is logged to the
 // audit trail (the Bar Council "who saw this file" answer).
 export async function getDocumentUrl(id: string): Promise<SignedUrlResult> {

@@ -76,6 +76,10 @@ export function UsersTable({
                       value={u.role}
                       onValueChange={(v) => change(u.id, (v ?? 'staff') as Role)}
                       disabled={pending}
+                      items={[
+                        { value: 'staff', label: 'Staff' },
+                        { value: 'admin', label: 'Admin' },
+                      ]}
                     >
                       <SelectTrigger className="w-32">
                         <SelectValue />

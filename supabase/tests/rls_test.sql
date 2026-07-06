@@ -72,22 +72,24 @@ end $$;
 
 -- 5. Hard delete must be impossible even for admin. Two ways it can be blocked:
 -- a privilege error (delete revoked) or a silent 0-row delete (no delete policy).
--- Either way the row must SURVIVE — that is what we assert.
+-- Since migration 0005, ADMINS may hard-delete (see 0005_admin_hard_delete),
+-- so the invariant now is that STAFF cannot. Run the delete as staff (a002)
+-- and assert the row survives. Admin hard-delete is exercised separately.
 do $$
 declare survived int;
 begin
-  perform _as('00000000-0000-0000-0000-00000000a001');
+  perform _as('00000000-0000-0000-0000-00000000a002');  -- staff
   begin
     delete from clients where id = '00000000-0000-0000-0000-0000000c0001';
   exception
-    when insufficient_privilege then null;  -- expected once delete is revoked
+    when insufficient_privilege then null;
   end;
   perform _reset();
   select count(*) into survived from clients where id = '00000000-0000-0000-0000-0000000c0001';
   if survived <> 1 then
-    raise exception 'FAIL: client row was hard-deleted (expected it to survive)';
+    raise exception 'FAIL: staff hard-deleted a client (expected it to survive)';
   end if;
-  raise notice 'HARD-DELETE DENIAL PASSED';
+  raise notice 'STAFF HARD-DELETE DENIAL PASSED';
 end $$;
 
 drop function _as(text);

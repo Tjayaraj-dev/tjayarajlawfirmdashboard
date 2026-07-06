@@ -39,17 +39,11 @@ import {
 import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { formatDate } from '@/lib/format-date'
 import type { Database } from '@/lib/supabase/database.types'
 
 export type ClientRow = Database['public']['Tables']['clients']['Row']
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 function RowActions({
   client,

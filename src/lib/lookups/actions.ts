@@ -7,11 +7,12 @@ export type ActionResult = { error: string | null }
 
 // Both editable lookups share the same shape (name + slug). RLS restricts
 // writes to admin; this is just the thin server wrapper.
-type LookupTable = 'case_types' | 'document_categories'
+type LookupTable = 'case_types' | 'document_categories' | 'courts'
 
 const PATHS: Record<LookupTable, string> = {
   case_types: '/case-types',
   document_categories: '/document-categories',
+  courts: '/courts',
 }
 
 function slugify(name: string): string {

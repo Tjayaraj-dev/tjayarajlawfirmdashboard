@@ -218,6 +218,24 @@ export type Database = {
           },
         ]
       }
+      courts: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       document_categories: {
         Row: {
           id: string
@@ -238,6 +256,7 @@ export type Database = {
       }
       documents: {
         Row: {
+          case_event_id: string | null
           category_id: string | null
           created_at: string
           deleted_at: string | null
@@ -251,6 +270,7 @@ export type Database = {
           version: number
         }
         Insert: {
+          case_event_id?: string | null
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -264,6 +284,7 @@ export type Database = {
           version?: number
         }
         Update: {
+          case_event_id?: string | null
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -277,6 +298,13 @@ export type Database = {
           version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_case_event_id_fkey"
+            columns: ["case_event_id"]
+            isOneToOne: false
+            referencedRelation: "case_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_category_id_fkey"
             columns: ["category_id"]
@@ -296,6 +324,60 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exhibits: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_presented: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          marking: string | null
+          matter_id: string
+          through_witness: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_presented?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          marking?: string | null
+          matter_id: string
+          through_witness?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_presented?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          marking?: string | null
+          matter_id?: string
+          through_witness?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exhibits_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exhibits_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
             referencedColumns: ["id"]
           },
         ]
@@ -339,6 +421,7 @@ export type Database = {
       matters: {
         Row: {
           accused: string | null
+          appointment_type: string | null
           assigned_to: string | null
           case_no_committal: string | null
           case_no_trial: string | null
@@ -363,6 +446,7 @@ export type Database = {
         }
         Insert: {
           accused?: string | null
+          appointment_type?: string | null
           assigned_to?: string | null
           case_no_committal?: string | null
           case_no_trial?: string | null
@@ -387,6 +471,7 @@ export type Database = {
         }
         Update: {
           accused?: string | null
+          appointment_type?: string | null
           assigned_to?: string | null
           case_no_committal?: string | null
           case_no_trial?: string | null
@@ -467,6 +552,60 @@ export type Database = {
         }
         Relationships: []
       }
+      witnesses: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_presented: string | null
+          deleted_at: string | null
+          id: string
+          matter_id: string
+          name: string
+          role: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_presented?: string | null
+          deleted_at?: string | null
+          id?: string
+          matter_id: string
+          name: string
+          role?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_presented?: string | null
+          deleted_at?: string | null
+          id?: string
+          matter_id?: string
+          name?: string
+          role?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "witnesses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "witnesses_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -481,6 +620,12 @@ export type Database = {
         | "prison_attendance"
         | "client_interview"
         | "minutes_of_proceedings"
+        | "civil_court_attendance"
+        | "advisory_board"
+        | "remand_proceeding"
+        | "zoom_appellate"
+        | "zoom_trial"
+        | "zoom_remand"
       client_type: "individual" | "corporate"
       matter_status: "active" | "on_hold" | "pending_filing" | "closed"
       user_role: "admin" | "staff"
@@ -620,6 +765,12 @@ export const Constants = {
         "prison_attendance",
         "client_interview",
         "minutes_of_proceedings",
+        "civil_court_attendance",
+        "advisory_board",
+        "remand_proceeding",
+        "zoom_appellate",
+        "zoom_trial",
+        "zoom_remand",
       ],
       client_type: ["individual", "corporate"],
       matter_status: ["active", "on_hold", "pending_filing", "closed"],

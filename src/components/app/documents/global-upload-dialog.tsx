@@ -21,8 +21,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { uploadDocument } from '@/lib/documents/actions'
+import {
+  ClientMatterPicker,
+  type MatterOption,
+} from '@/components/app/matters/client-matter-picker'
 
-export type MatterOption = { id: string; file_ref: string; title: string }
+export type { MatterOption }
 export type CategoryOption = { id: string; name: string }
 
 export function GlobalUploadDialog({
@@ -38,12 +42,14 @@ export function GlobalUploadDialog({
 }) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [clientId, setClientId] = useState('')
   const [matterId, setMatterId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [pending, startTransition] = useTransition()
 
   useEffect(() => {
     if (open) {
+      setClientId('')
       setMatterId('')
       setCategoryId('')
       if (fileRef.current) fileRef.current.value = ''
@@ -89,21 +95,13 @@ export function GlobalUploadDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="up_matter">Matter</Label>
-            <Select value={matterId} onValueChange={(v) => setMatterId(v ?? '')}>
-              <SelectTrigger id="up_matter">
-                <SelectValue placeholder="Select a matter" />
-              </SelectTrigger>
-              <SelectContent>
-                {matters.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.file_ref} — {m.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ClientMatterPicker
+            matters={matters}
+            clientId={clientId}
+            onClientChange={setClientId}
+            matterId={matterId}
+            onMatterChange={setMatterId}
+          />
 
           <div className="space-y-1.5">
             <Label htmlFor="up_file">File</Label>
@@ -111,13 +109,17 @@ export function GlobalUploadDialog({
               id="up_file"
               ref={fileRef}
               type="file"
-              className="w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-brand-navy file:px-3 file:py-1.5 file:text-xs file:text-white"
+              className="w-full cursor-pointer rounded-lg border border-input p-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/30 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-brand-navy file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="up_cat">Category (optional)</Label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? '')}>
+            <Select
+              value={categoryId || null}
+              onValueChange={(v) => setCategoryId(v ?? '')}
+              items={categories.map((c) => ({ value: c.id, label: c.name }))}
+            >
               <SelectTrigger id="up_cat">
                 <SelectValue placeholder="None" />
               </SelectTrigger>

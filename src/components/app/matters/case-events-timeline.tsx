@@ -14,7 +14,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { EventLogDialog } from './event-log-dialog'
+import { EventAttachments, type Attachment } from './event-attachments'
 import { softDeleteCaseEvent, hardDeleteCaseEvent } from '@/lib/case-events/actions'
+import { formatDate as fmtDate, formatDateTime as fmtDateTime } from '@/lib/format-date'
 import {
   EVENT_TYPE_MAP,
   type CaseEventType,
@@ -22,23 +24,6 @@ import {
 import type { Database } from '@/lib/supabase/database.types'
 
 type CaseEventRow = Database['public']['Tables']['case_events']['Row']
-
-function fmtDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 function detailPairs(type: CaseEventType, details: Record<string, string>) {
   const cfg = EVENT_TYPE_MAP[type]
@@ -51,16 +36,19 @@ function EventCard({
   event,
   matterId,
   isAdmin,
+  attachments,
 }: {
   event: CaseEventRow
   matterId: string
   isAdmin: boolean
+  attachments: Attachment[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const cfg = EVENT_TYPE_MAP[event.event_type]
+  const eventType = event.event_type as CaseEventType
+  const cfg = EVENT_TYPE_MAP[eventType]
   const details = (event.details ?? {}) as Record<string, string>
-  const pairs = detailPairs(event.event_type, details)
+  const pairs = detailPairs(eventType, details)
 
   const remove = () => {
     if (!confirm('Archive this event? It is hidden, not destroyed.')) return
@@ -147,6 +135,10 @@ function EventCard({
             )}
           </p>
         )}
+
+        <div className="mt-3 border-t pt-3">
+          <EventAttachments matterId={matterId} eventId={event.id} attachments={attachments} />
+        </div>
       </div>
     </li>
   )
@@ -165,10 +157,12 @@ export function CaseEventsTimeline({
   matterId,
   events,
   isAdmin,
+  attachmentsByEvent,
 }: {
   matterId: string
   events: CaseEventRow[]
   isAdmin: boolean
+  attachmentsByEvent: Record<string, Attachment[]>
 }) {
   const [open, setOpen] = useState(false)
 
@@ -191,7 +185,13 @@ export function CaseEventsTimeline({
       ) : (
         <ul className="space-y-4 border-l border-border/70 pl-1">
           {events.map((e) => (
-            <EventCard key={e.id} event={e} matterId={matterId} isAdmin={isAdmin} />
+            <EventCard
+              key={e.id}
+              event={e}
+              matterId={matterId}
+              isAdmin={isAdmin}
+              attachments={attachmentsByEvent[e.id] ?? []}
+            />
           ))}
         </ul>
       )}

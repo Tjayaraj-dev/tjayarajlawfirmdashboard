@@ -126,7 +126,14 @@ export function ClientFormDialog({ open, onOpenChange, caseTypes, client }: Prop
             </Field>
 
             <Field label="Type" htmlFor="type">
-              <Select value={type} onValueChange={(v) => setValue('type', (v ?? 'individual') as ClientFormValues['type'])}>
+              <Select
+                value={type}
+                onValueChange={(v) => setValue('type', (v ?? 'individual') as ClientFormValues['type'])}
+                items={[
+                  { value: 'individual', label: 'Individual' },
+                  { value: 'corporate', label: 'Corporate' },
+                ]}
+              >
                 <SelectTrigger id="type">
                   <SelectValue />
                 </SelectTrigger>
@@ -169,8 +176,9 @@ export function ClientFormDialog({ open, onOpenChange, caseTypes, client }: Prop
                 </Field>
                 <Field label="Case type" htmlFor="case_type_id">
                   <Select
-                    value={caseTypeId || ''}
+                    value={caseTypeId || null}
                     onValueChange={(v) => setValue('case_type_id', v ?? '')}
+                    items={caseTypes.map((c) => ({ value: c.id, label: c.name }))}
                   >
                     <SelectTrigger id="case_type_id">
                       <SelectValue placeholder={caseTypes.length ? 'Select…' : 'Add case types in admin'} />

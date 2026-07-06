@@ -9,22 +9,23 @@ export default async function MattersPage() {
     createClient(),
   ])
 
-  // RLS scopes both queries. Client name is embedded for display + search.
-  const [{ data: matterData }, { data: clientData }] = await Promise.all([
-    supabase
-      .from('matters')
-      .select('*, client:clients(name)')
-      .order('deleted_at', { ascending: true, nullsFirst: true })
-      .order('next_hearing_at', { ascending: true, nullsFirst: false }),
-    supabase
-      .from('clients')
-      .select('id, name')
-      .is('deleted_at', null)
-      .order('name'),
-  ])
+  // RLS scopes these. Client name is embedded for display + search.
+  const [{ data: matterData }, { data: clientData }, { data: caseTypeData }, { data: courtData }] =
+    await Promise.all([
+      supabase
+        .from('matters')
+        .select('*, client:clients(name)')
+        .order('deleted_at', { ascending: true, nullsFirst: true })
+        .order('next_hearing_at', { ascending: true, nullsFirst: false }),
+      supabase.from('clients').select('id, name').is('deleted_at', null).order('name'),
+      supabase.from('case_types').select('id, name, slug').order('name'),
+      supabase.from('courts').select('id, name').order('name'),
+    ])
 
   const matters = (matterData ?? []) as MatterRow[]
   const clients = clientData ?? []
+  const caseTypes = caseTypeData ?? []
+  const courts = courtData ?? []
   const admin = isAdmin(session?.role)
 
   return (
@@ -42,7 +43,7 @@ export default async function MattersPage() {
         </p>
       </header>
 
-      <MattersTable matters={matters} clients={clients} isAdmin={admin} />
+      <MattersTable matters={matters} clients={clients} caseTypes={caseTypes} courts={courts} isAdmin={admin} />
     </div>
   )
 }

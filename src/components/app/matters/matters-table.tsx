@@ -32,9 +32,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { MatterFormDialog, type ClientOption } from './matter-form-dialog'
+import {
+  MatterFormDialog,
+  type ClientOption,
+  type CaseTypeOption,
+  type CourtOption,
+} from './matter-form-dialog'
 import { softDeleteMatter, restoreMatter, hardDeleteMatter } from '@/lib/matters/actions'
 import { MATTER_STATUSES, type MatterFormValues } from '@/lib/matters/schema'
+import { formatDate, formatDateTime } from '@/lib/format-date'
 import type { Database } from '@/lib/supabase/database.types'
 
 type MatterBase = Database['public']['Tables']['matters']['Row']
@@ -50,24 +56,6 @@ const STATUS_LABELS = Object.fromEntries(
   MATTER_STATUSES.map((s) => [s.value, s.label])
 )
 
-function formatDate(iso: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-function formatDateTime(iso: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('en-MY', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 // ISO timestamp -> value for <input type="datetime-local">
 function toLocalInput(iso: string | null): string {
   if (!iso) return ''
@@ -76,23 +64,22 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-function rowToForm(m: MatterRow): { id: string } & MatterFormValues {
+function rowToForm(m: MatterRow) {
   return {
     id: m.id,
-    client_id: m.client_id,
-    file_ref: m.file_ref,
-    title: m.title,
-    status: m.status,
-    opened_at: m.opened_at,
-    court: m.court ?? '',
-    case_no_committal: m.case_no_committal ?? '',
-    case_no_trial: m.case_no_trial ?? '',
-    accused: m.accused ?? '',
-    charges: m.charges ?? '',
-    prosecutor_dpp: m.prosecutor_dpp ?? '',
-    opposing_counsel: m.opposing_counsel ?? '',
-    description: m.description ?? '',
-    next_hearing_at: toLocalInput(m.next_hearing_at),
+    values: {
+      client_id: m.client_id,
+      file_ref: m.file_ref,
+      title: m.title,
+      case_type_id: m.case_type_id ?? '',
+      appointment_type: (m.appointment_type ?? '') as MatterFormValues['appointment_type'],
+      court: m.court ?? '',
+      status: m.status,
+      opened_at: m.opened_at,
+      next_hearing_at: toLocalInput(m.next_hearing_at),
+      description: m.description ?? '',
+    } satisfies MatterFormValues,
+    customFields: (m.custom_fields ?? {}) as Record<string, string>,
   }
 }
 
@@ -190,10 +177,14 @@ function RowActions({
 export function MattersTable({
   matters,
   clients,
+  caseTypes,
+  courts,
   isAdmin,
 }: {
   matters: MatterRow[]
   clients: ClientOption[]
+  caseTypes: CaseTypeOption[]
+  courts: CourtOption[]
   isAdmin: boolean
 }) {
   const [globalFilter, setGlobalFilter] = useState('')
@@ -367,6 +358,8 @@ export function MattersTable({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         clients={clients}
+        caseTypes={caseTypes}
+        courts={courts}
         matter={editing ? rowToForm(editing) : undefined}
       />
     </div>
