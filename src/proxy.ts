@@ -29,7 +29,7 @@ function demoGate(request: NextRequest) {
   if (!hasDemoSession && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('next', pathname)
+    if (pathname !== '/') url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
