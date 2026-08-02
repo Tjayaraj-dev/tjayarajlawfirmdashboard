@@ -12,7 +12,9 @@ export async function GET() {
   )
 
   const started = Date.now()
-  const { error } = await supabase.from('firm_settings').select('id').limit(1)
+  // ping() runs on Postgres but touches no table, so it works under the
+  // fail-closed RLS grants where a plain table select would be denied.
+  const { error } = await supabase.rpc('ping')
 
   return NextResponse.json(
     {
