@@ -5,11 +5,8 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Paperclip, Download, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  uploadEventDocument,
-  getDocumentUrl,
-  softDeleteDocument,
-} from '@/lib/documents/actions'
+import { getDocumentUrl, softDeleteDocument } from '@/lib/documents/actions'
+import { uploadDocument } from '@/lib/documents/upload'
 
 export type Attachment = {
   id: string
@@ -44,10 +41,8 @@ export function EventAttachments({
       toast.error('Choose a file first')
       return
     }
-    const fd = new FormData()
-    fd.set('file', file)
     startTransition(async () => {
-      const { error } = await uploadEventDocument(matterId, eventId, fd)
+      const { error } = await uploadDocument({ matterId, eventId, file })
       if (error) {
         toast.error(error)
         return

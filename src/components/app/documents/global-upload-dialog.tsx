@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { uploadDocument } from '@/lib/documents/actions'
+import { uploadDocument } from '@/lib/documents/upload'
 import {
   ClientMatterPicker,
   type MatterOption,
@@ -47,14 +47,15 @@ export function GlobalUploadDialog({
   const [categoryId, setCategoryId] = useState('')
   const [pending, startTransition] = useTransition()
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       setClientId('')
       setMatterId('')
       setCategoryId('')
       if (fileRef.current) fileRef.current.value = ''
     }
-  }, [open])
+    onOpenChange(nextOpen)
+  }
 
   const submit = () => {
     if (!matterId) {
@@ -66,23 +67,20 @@ export function GlobalUploadDialog({
       toast.error('Choose a file')
       return
     }
-    const fd = new FormData()
-    fd.set('file', file)
-    if (categoryId) fd.set('category_id', categoryId)
     startTransition(async () => {
-      const { error } = await uploadDocument(matterId, fd)
+      const { error } = await uploadDocument({ matterId, file, categoryId })
       if (error) {
         toast.error(error)
         return
       }
       toast.success('Document uploaded')
-      onOpenChange(false)
+      handleOpenChange(false)
       router.refresh()
     })
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-light text-brand-navy">

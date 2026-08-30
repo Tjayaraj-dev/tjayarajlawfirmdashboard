@@ -6,7 +6,8 @@ import { toast } from 'sonner'
 import { Upload, Download, Trash2, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/format-date'
-import { uploadDocument, getDocumentUrl, softDeleteDocument } from '@/lib/documents/actions'
+import { getDocumentUrl, softDeleteDocument } from '@/lib/documents/actions'
+import { uploadDocument } from '@/lib/documents/upload'
 
 export type DefenceDoc = {
   id: string
@@ -38,11 +39,8 @@ function IndexTab({
       toast.error('Choose a file first')
       return
     }
-    const fd = new FormData()
-    fd.set('file', file)
-    fd.set('category_id', category.id)
     startTransition(async () => {
-      const { error } = await uploadDocument(matterId, fd)
+      const { error } = await uploadDocument({ matterId, file, categoryId: category.id })
       if (error) {
         toast.error(error)
         return

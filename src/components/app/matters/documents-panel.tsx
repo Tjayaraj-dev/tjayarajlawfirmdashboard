@@ -21,11 +21,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  uploadDocument,
   getDocumentUrl,
   softDeleteDocument,
   hardDeleteDocument,
 } from '@/lib/documents/actions'
+import { uploadDocument } from '@/lib/documents/upload'
 import type { Database } from '@/lib/supabase/database.types'
 
 type DocumentRow = Database['public']['Tables']['documents']['Row'] & {
@@ -64,11 +64,8 @@ export function DocumentsPanel({
       toast.error('Choose a file first')
       return
     }
-    const fd = new FormData()
-    fd.set('file', file)
-    if (categoryId) fd.set('category_id', categoryId)
     startTransition(async () => {
-      const { error } = await uploadDocument(matterId, fd)
+      const { error } = await uploadDocument({ matterId, file, categoryId })
       if (error) {
         toast.error(error)
         return
