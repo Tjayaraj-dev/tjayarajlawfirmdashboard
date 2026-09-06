@@ -1,11 +1,19 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useMemo, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { DndContext, type DragEndEvent } from '@dnd-kit/core'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EventLogDialog, type MatterOption } from '@/components/app/matters/event-log-dialog'
+import { QuickScheduleDialog } from './quick-schedule-dialog'
+import { MonthView } from './month-view'
+import { WeekView } from './week-view'
+import { DayView } from './day-view'
+import { scheduleNextHearing } from '@/lib/matters/actions'
+import { rescheduleCaseEvent } from '@/lib/case-events/actions'
 
 export type CalendarItem = {
   id: string
@@ -17,23 +25,32 @@ export type CalendarItem = {
   kind: string
 }
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
 
-const KIND_DOT: Record<string, string> = {
-  Hearing: 'bg-emerald-500',
-  'Court attendance': 'bg-emerald-500',
-  'Zoom session': 'bg-blue-500',
-  'Prison attendance': 'bg-amber-500',
-  'Client interview': 'bg-violet-500',
-  'Minutes of proceedings': 'bg-rose-500',
-}
+type View = 'month' | 'week' | 'day'
 
 function dateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function headerLabel(cursor: Date, view: View): string {
+  if (view === 'day') {
+    return cursor.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  }
+  if (view === 'week') {
+    const monday = new Date(cursor)
+    monday.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7))
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    const sameMonth = monday.getMonth() === sunday.getMonth()
+    return sameMonth
+      ? `${MONTHS[monday.getMonth()]} ${monday.getDate()}–${sunday.getDate()}, ${monday.getFullYear()}`
+      : `${MONTHS[monday.getMonth()]} ${monday.getDate()} – ${MONTHS[sunday.getMonth()]} ${sunday.getDate()}, ${sunday.getFullYear()}`
+  }
+  return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`
 }
 
 export function CalendarBoard({
@@ -43,11 +60,13 @@ export function CalendarBoard({
   items: CalendarItem[]
   matters: MatterOption[]
 }) {
+  const router = useRouter()
+  const [, startTransition] = useTransition()
   const today = useMemo(() => new Date(), [])
-  const [cursor, setCursor] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1)
-  )
+  const [view, setView] = useState<View>('month')
+  const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [logOpen, setLogOpen] = useState(false)
+  const [quickScheduleDate, setQuickScheduleDate] = useState<string | null>(null)
 
   const byDate = useMemo(() => {
     const map = new Map<string, CalendarItem[]>()
@@ -62,33 +81,64 @@ export function CalendarBoard({
     return map
   }, [items])
 
-  // Monday-start 6-week grid covering the visible month.
-  const cells = useMemo(() => {
-    const firstWeekday = (cursor.getDay() + 6) % 7 // Mon=0
-    const start = new Date(cursor)
-    start.setDate(1 - firstWeekday)
-    return Array.from({ length: 42 }, (_, i) => {
-      const d = new Date(start)
-      d.setDate(start.getDate() + i)
-      return d
-    })
-  }, [cursor])
-
   const todayStr = dateStr(today)
-  const move = (delta: number) =>
-    setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1))
+
+  const move = (delta: number) => {
+    setCursor((c) => {
+      if (view === 'day') {
+        const d = new Date(c)
+        d.setDate(d.getDate() + delta)
+        return d
+      }
+      if (view === 'week') {
+        const d = new Date(c)
+        d.setDate(d.getDate() + delta * 7)
+        return d
+      }
+      return new Date(c.getFullYear(), c.getMonth() + delta, 1)
+    })
+  }
+
+  const goToday = () => setCursor(view === 'month' ? new Date(today.getFullYear(), today.getMonth(), 1) : new Date(today))
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const itemId = event.active.id as string
+    const newDate = event.over?.id as string | undefined
+    if (!newDate) return
+    const item = items.find((i) => i.id === itemId)
+    if (!item || item.date === newDate) return
+
+    startTransition(async () => {
+      const result = itemId.startsWith('mt-')
+        ? await scheduleNextHearing(item.matterId, newDate, item.time ?? '09:00')
+        : await rescheduleCaseEvent(itemId.slice(3), newDate)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      toast.success('Rescheduled')
+      router.refresh()
+    })
+  }
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-2xl font-light text-brand-navy">
-          {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
+          {headerLabel(cursor, view)}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs value={view} onValueChange={(v) => setView((v as View) ?? 'month')}>
+            <TabsList>
+              <TabsTrigger value="month">Month</TabsTrigger>
+              <TabsTrigger value="week">Week</TabsTrigger>
+              <TabsTrigger value="day">Day</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Button size="sm" onClick={() => setLogOpen(true)} disabled={matters.length === 0}>
             <Plus className="size-4" /> Log event
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}>
+          <Button variant="outline" size="sm" onClick={goToday}>
             Today
           </Button>
           <Button variant="outline" size="sm" className="size-8 p-0" onClick={() => move(-1)}>
@@ -101,63 +151,26 @@ export function CalendarBoard({
       </div>
 
       <EventLogDialog open={logOpen} onOpenChange={setLogOpen} matters={matters} />
+      {quickScheduleDate && (
+        <QuickScheduleDialog
+          open={!!quickScheduleDate}
+          onOpenChange={(open) => !open && setQuickScheduleDate(null)}
+          matters={matters}
+          defaultDate={quickScheduleDate}
+        />
+      )}
 
-      <div className="overflow-x-auto rounded-lg border bg-white">
-        <div className="min-w-[720px]">
-        <div className="grid grid-cols-7 border-b bg-muted/30">
-          {WEEKDAYS.map((w) => (
-            <div key={w} className="px-2 py-2 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {w}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {cells.map((d, i) => {
-            const ds = dateStr(d)
-            const inMonth = d.getMonth() === cursor.getMonth()
-            const dayItems = byDate.get(ds) ?? []
-            const isToday = ds === todayStr
-            return (
-              <div
-                key={i}
-                className={cn(
-                  'min-h-24 border-b border-r p-1.5 last:border-r-0 [&:nth-child(7n)]:border-r-0',
-                  !inMonth && 'bg-muted/20'
-                )}
-              >
-                <div className="flex justify-end">
-                  <span
-                    className={cn(
-                      'flex size-6 items-center justify-center rounded-full text-xs',
-                      isToday ? 'bg-brand-navy font-medium text-white' : 'text-muted-foreground',
-                      !inMonth && !isToday && 'opacity-40'
-                    )}
-                  >
-                    {d.getDate()}
-                  </span>
-                </div>
-                <div className="mt-1 space-y-1">
-                  {dayItems.map((it) => (
-                    <Link
-                      key={it.id}
-                      href={`/matters/${it.matterId}`}
-                      className="block rounded border border-border/60 bg-white px-1.5 py-1 text-[11px] leading-tight transition-colors hover:border-brand-gold/50 hover:bg-brand-gold/5"
-                    >
-                      <span className="flex items-center gap-1">
-                        <span className={cn('size-1.5 shrink-0 rounded-full', KIND_DOT[it.kind] ?? 'bg-muted-foreground')} />
-                        {it.time && <span className="font-medium text-brand-navy">{it.time}</span>}
-                        <span className="truncate font-mono text-[10px] text-brand-gold">{it.fileRef}</span>
-                      </span>
-                      <span className="mt-0.5 block truncate text-muted-foreground">{it.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-        </div>
-      </div>
+      <DndContext onDragEnd={handleDragEnd}>
+        {view === 'month' && (
+          <MonthView cursor={cursor} byDate={byDate} todayStr={todayStr} onEmptyClick={setQuickScheduleDate} />
+        )}
+        {view === 'week' && (
+          <WeekView cursor={cursor} byDate={byDate} todayStr={todayStr} onEmptyClick={setQuickScheduleDate} />
+        )}
+        {view === 'day' && (
+          <DayView cursor={cursor} byDate={byDate} todayStr={todayStr} onEmptyClick={setQuickScheduleDate} />
+        )}
+      </DndContext>
     </div>
   )
 }

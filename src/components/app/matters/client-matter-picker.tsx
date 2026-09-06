@@ -2,13 +2,7 @@
 
 import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 
 // A matter carries its client so pickers can be client-first.
 export type MatterOption = {
@@ -57,43 +51,29 @@ export function ClientMatterPicker({
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
         <Label htmlFor="cmp_client">Client</Label>
-        <Select
-          value={clientId || null}
-          onValueChange={(v) => pickClient(v ?? '')}
+        <Combobox
+          id="cmp_client"
+          value={clientId}
+          onValueChange={pickClient}
           items={clients.map((c) => ({ value: c.id, label: c.name }))}
-        >
-          <SelectTrigger id="cmp_client">
-            <SelectValue placeholder="Select a client" />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Select a client"
+          searchPlaceholder="Search clients…"
+          emptyText="No clients found."
+        />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="cmp_matter">Matter (case file)</Label>
-        <Select
-          value={matterId || null}
-          onValueChange={(v) => onMatterChange(v ?? '')}
+        <Combobox
+          id="cmp_matter"
+          value={matterId}
+          onValueChange={onMatterChange}
           disabled={!clientId}
           items={clientMatters.map((m) => ({ value: m.id, label: `${m.file_ref} — ${m.title}` }))}
-        >
-          <SelectTrigger id="cmp_matter">
-            <SelectValue placeholder={clientId ? 'Select a case' : 'Pick a client first'} />
-          </SelectTrigger>
-          <SelectContent>
-            {clientMatters.map((m) => (
-              <SelectItem key={m.id} value={m.id}>
-                {m.file_ref} — {m.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder={clientId ? 'Select a case' : 'Pick a client first'}
+          searchPlaceholder="Search cases…"
+          emptyText="No cases for this client."
+        />
       </div>
     </div>
   )

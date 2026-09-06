@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
-import { matterFormSchema, type MatterFormValues } from './schema'
+import { matterFormSchema, scheduleNextHearingSchema, type MatterFormValues } from './schema'
 
 export type ActionResult = { error: string | null }
 
@@ -104,6 +104,33 @@ export async function restoreMatter(id: string): Promise<ActionResult> {
   if (error) return { error: error.message }
 
   revalidatePath('/matters')
+  return { error: null }
+}
+
+// Narrow update for the calendar's click-to-schedule and drag-to-reschedule —
+// touches only next_hearing_at, unlike updateMatterRecord's whole-form write.
+export async function scheduleNextHearing(
+  matterId: string,
+  date: string,
+  time?: string
+): Promise<ActionResult> {
+  const parsed = scheduleNextHearingSchema.safeParse({ matterId, date, time })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+  }
+
+  const nextHearingAt = new Date(`${parsed.data.date}T${parsed.data.time || '09:00'}:00`).toISOString()
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('matters')
+    .update({ next_hearing_at: nextHearingAt })
+    .eq('id', parsed.data.matterId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/calendar')
+  revalidatePath('/matters')
+  revalidatePath(`/matters/${parsed.data.matterId}`)
   return { error: null }
 }
 

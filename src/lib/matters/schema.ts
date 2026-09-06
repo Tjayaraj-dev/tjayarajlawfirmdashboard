@@ -27,6 +27,14 @@ export const matterFormSchema = z.object({
 
 export type MatterFormValues = z.infer<typeof matterFormSchema>
 
+export const scheduleNextHearingSchema = z.object({
+  matterId: z.string().uuid('Select a matter'),
+  date: z.string().min(1, 'Date is required'),
+  time: z.string().optional().or(z.literal('')),
+})
+
+export type ScheduleNextHearingValues = z.infer<typeof scheduleNextHearingSchema>
+
 export function emptyMatterForm(): MatterFormValues {
   return {
     client_id: '',

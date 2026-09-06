@@ -73,6 +73,41 @@ export async function createCaseEvent(
   return { error: null }
 }
 
+// Drag-to-reschedule on the calendar. Re-fetches the event's own type/matter
+// server-side rather than trusting the client, then mirrors createCaseEvent's
+// courtroom cascade so the matter's headline next hearing stays in sync.
+export async function rescheduleCaseEvent(
+  id: string,
+  nextDate: string
+): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  const { data: row, error: fetchError } = await supabase
+    .from('case_events')
+    .select('matter_id, event_type')
+    .eq('id', id)
+    .single()
+  if (fetchError || !row) return { error: fetchError?.message ?? 'Event not found' }
+
+  const { error } = await supabase
+    .from('case_events')
+    .update({ next_date: nextDate })
+    .eq('id', id)
+  if (error) return { error: error.message }
+
+  if (COURTROOM.includes(row.event_type as CaseEventType)) {
+    await supabase
+      .from('matters')
+      .update({ next_hearing_at: new Date(`${nextDate}T09:00:00`).toISOString() })
+      .eq('id', row.matter_id)
+  }
+
+  revalidatePath(`/matters/${row.matter_id}`)
+  revalidatePath('/matters')
+  revalidatePath('/calendar')
+  return { error: null }
+}
+
 export async function softDeleteCaseEvent(
   id: string,
   matterId: string

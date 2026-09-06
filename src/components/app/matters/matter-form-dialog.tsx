@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 import {
   matterFormSchema,
   emptyMatterForm,
@@ -177,22 +178,15 @@ export function MatterFormDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Client" htmlFor="client_id" error={errors.client_id?.message}>
-              <Select
-                value={clientId || null}
-                onValueChange={(v) => setValue('client_id', v ?? '')}
+              <Combobox
+                id="client_id"
+                value={clientId}
+                onValueChange={(v) => setValue('client_id', v)}
                 items={clients.map((c) => ({ value: c.id, label: c.name }))}
-              >
-                <SelectTrigger id="client_id">
-                  <SelectValue placeholder="Select a client" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Select a client"
+                searchPlaceholder="Search clients…"
+                emptyText="No clients found."
+              />
             </Field>
 
             <Field label="File ref (TJC)" htmlFor="file_ref" error={errors.file_ref?.message}>
