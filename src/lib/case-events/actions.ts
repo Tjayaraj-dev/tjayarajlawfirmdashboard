@@ -73,6 +73,58 @@ export async function createCaseEvent(
   return { error: null }
 }
 
+// Edits an existing event's fields in place. The event's type is fixed (it
+// determines which fields exist) — only field values change, never the type.
+export async function updateCaseEvent(
+  id: string,
+  matterId: string,
+  type: CaseEventType,
+  values: Record<string, string>
+): Promise<ActionResult> {
+  const cfg = EVENT_TYPE_MAP[type]
+  if (!cfg) return { error: 'Unknown event type' }
+  if (!values.occurred_at) return { error: 'Date & time is required' }
+
+  const supabase = await createClient()
+
+  const details: Record<string, string> = {}
+  for (const f of cfg.fields) {
+    if (f.detail) {
+      const v = values[f.key]?.trim()
+      if (v) details[f.key] = v
+    }
+  }
+
+  const nextDate = values.next_date || null
+
+  const { error } = await supabase
+    .from('case_events')
+    .update({
+      occurred_at: new Date(values.occurred_at).toISOString(),
+      counsel: values.counsel?.trim() || null,
+      coram: values.coram?.trim() || null,
+      set_for: values.set_for?.trim() || null,
+      next_date: nextDate,
+      next_set_for: values.next_set_for?.trim() || null,
+      notes: values.notes?.trim() || null,
+      details,
+    })
+    .eq('id', id)
+  if (error) return { error: error.message }
+
+  if (nextDate && COURTROOM.includes(type)) {
+    await supabase
+      .from('matters')
+      .update({ next_hearing_at: new Date(`${nextDate}T09:00:00`).toISOString() })
+      .eq('id', matterId)
+  }
+
+  revalidatePath(`/matters/${matterId}`)
+  revalidatePath('/matters')
+  revalidatePath('/calendar')
+  return { error: null }
+}
+
 // Drag-to-reschedule on the calendar. Re-fetches the event's own type/matter
 // server-side rather than trusting the client, then mirrors createCaseEvent's
 // courtroom cascade so the matter's headline next hearing stays in sync.

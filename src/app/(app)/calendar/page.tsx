@@ -22,7 +22,7 @@ export default async function CalendarPage() {
       .is('deleted_at', null),
     supabase
       .from('case_events')
-      .select('id, matter_id, next_date, next_set_for, event_type, matter:matters(file_ref, title)')
+      .select('id, matter_id, occurred_at, counsel, coram, set_for, next_date, next_set_for, notes, details, event_type, matter:matters(file_ref, title)')
       .not('next_date', 'is', null)
       .is('deleted_at', null),
     supabase
@@ -53,6 +53,17 @@ export default async function CalendarPage() {
       fileRef: m?.file_ref ?? '',
       matterId: e.matter_id,
       kind: EVENT_TYPE_MAP[e.event_type as CaseEventType]?.label || e.event_type,
+      rawEvent: {
+        occurred_at: e.occurred_at,
+        counsel: e.counsel,
+        coram: e.coram,
+        set_for: e.set_for,
+        next_date: e.next_date,
+        next_set_for: e.next_set_for,
+        notes: e.notes,
+        details: e.details,
+        event_type: e.event_type as CaseEventType,
+      },
     })
   }
 

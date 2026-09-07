@@ -30,13 +30,42 @@ import {
   type FieldDef,
   type EventTypeConfig,
 } from '@/lib/case-events/config'
-import { createCaseEvent } from '@/lib/case-events/actions'
+import { createCaseEvent, updateCaseEvent } from '@/lib/case-events/actions'
 import { ClientMatterPicker, type MatterOption } from './client-matter-picker'
 
-function nowLocal(): string {
-  const dt = new Date()
+function toLocalDateTimeInput(iso: string): string {
+  const dt = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+}
+
+function nowLocal(): string {
+  return toLocalDateTimeInput(new Date().toISOString())
+}
+
+// Flattens a case_events row (shared columns + details jsonb) back into the
+// flat values shape this dialog edits, for pre-filling an edit.
+export function caseEventToValues(event: {
+  occurred_at: string
+  counsel: string | null
+  coram: string | null
+  set_for: string | null
+  next_date: string | null
+  next_set_for: string | null
+  notes: string | null
+  details: unknown
+}): Record<string, string> {
+  const details = (event.details ?? {}) as Record<string, string>
+  return {
+    occurred_at: toLocalDateTimeInput(event.occurred_at),
+    counsel: event.counsel ?? '',
+    coram: event.coram ?? '',
+    set_for: event.set_for ?? '',
+    next_date: event.next_date ?? '',
+    next_set_for: event.next_set_for ?? '',
+    notes: event.notes ?? '',
+    ...details,
+  }
 }
 
 function FieldControl({
@@ -82,6 +111,7 @@ export function EventLogDialog({
   matterId,
   matters,
   templates = EVENT_TYPES,
+  editingEvent,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -90,10 +120,15 @@ export function EventLogDialog({
   matters?: MatterOption[]
   // Limit which templates this dialog offers (e.g. Zoom page = Zoom only).
   templates?: EventTypeConfig[]
+  // When set, edits this existing event in place instead of logging a new
+  // one. Its type is fixed — only field values can change.
+  editingEvent?: { id: string; type: CaseEventType; values: Record<string, string> }
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [type, setType] = useState<CaseEventType>(templates[0]?.type ?? 'court_attendance')
+  const [type, setType] = useState<CaseEventType>(
+    editingEvent?.type ?? templates[0]?.type ?? 'court_attendance'
+  )
   const [values, setValues] = useState<Record<string, string>>({})
   const [pickedClient, setPickedClient] = useState('')
   const [pickedMatter, setPickedMatter] = useState('')
@@ -102,16 +137,17 @@ export function EventLogDialog({
   const targetMatter = matterId ?? pickedMatter
   const needsPicker = !matterId && !!matters
 
-  // Reset fields when opening or switching type; default the timestamp to now.
+  // Reset fields when opening or switching type; default the timestamp to
+  // now, or pre-fill from the event being edited.
   useEffect(() => {
     if (open) {
-      setValues({ occurred_at: nowLocal() })
+      setValues(editingEvent ? editingEvent.values : { occurred_at: nowLocal() })
       if (!matterId) {
         setPickedClient('')
         setPickedMatter('')
       }
     }
-  }, [open, type, matterId])
+  }, [open, type, matterId, editingEvent])
 
   const set = (key: string, v: string) =>
     setValues((prev) => ({ ...prev, [key]: v }))
@@ -122,12 +158,14 @@ export function EventLogDialog({
       return
     }
     startTransition(async () => {
-      const { error } = await createCaseEvent(targetMatter, type, values)
+      const { error } = editingEvent
+        ? await updateCaseEvent(editingEvent.id, targetMatter, type, values)
+        : await createCaseEvent(targetMatter, type, values)
       if (error) {
         toast.error(error)
         return
       }
-      toast.success(`${cfg.label} logged`)
+      toast.success(editingEvent ? `${cfg.label} updated` : `${cfg.label} logged`)
       onOpenChange(false)
       router.refresh()
     })
@@ -140,7 +178,7 @@ export function EventLogDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-light text-brand-navy">
-            Log an event
+            {editingEvent ? 'Edit event' : 'Log an event'}
           </DialogTitle>
           <DialogDescription>{cfg.blurb}</DialogDescription>
         </DialogHeader>
@@ -162,6 +200,7 @@ export function EventLogDialog({
               value={type}
               onValueChange={(v) => setType((v ?? 'court_attendance') as CaseEventType)}
               items={templates.map((e) => ({ value: e.type, label: e.label }))}
+              disabled={!!editingEvent}
             >
               <SelectTrigger id="ev_type">
                 <SelectValue />
@@ -193,7 +232,7 @@ export function EventLogDialog({
             Cancel
           </Button>
           <Button type="button" onClick={submit} disabled={pending}>
-            {pending ? 'Saving…' : 'Log event'}
+            {pending ? 'Saving…' : editingEvent ? 'Save changes' : 'Log event'}
           </Button>
         </DialogFooter>
       </DialogContent>

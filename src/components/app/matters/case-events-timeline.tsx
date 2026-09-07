@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
+import { Plus, Pencil, MoreHorizontal, Archive, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { EventLogDialog } from './event-log-dialog'
+import { EventLogDialog, caseEventToValues } from './event-log-dialog'
 import { EventAttachments, type Attachment } from './event-attachments'
 import { softDeleteCaseEvent, hardDeleteCaseEvent } from '@/lib/case-events/actions'
 import { formatDate as fmtDate, formatDateTime as fmtDateTime } from '@/lib/format-date'
@@ -45,6 +45,7 @@ function EventCard({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [editOpen, setEditOpen] = useState(false)
   const eventType = event.event_type as CaseEventType
   const cfg = EVENT_TYPE_MAP[eventType]
   const details = (event.details ?? {}) as Record<string, string>
@@ -96,6 +97,10 @@ function EventCard({
               <MoreHorizontal className="size-3.5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                <Pencil className="size-3.5" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={remove} className="text-destructive">
                 <Archive className="size-3.5" /> Archive
               </DropdownMenuItem>
@@ -140,6 +145,13 @@ function EventCard({
           <EventAttachments matterId={matterId} eventId={event.id} attachments={attachments} />
         </div>
       </div>
+
+      <EventLogDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        matterId={matterId}
+        editingEvent={{ id: event.id, type: eventType, values: caseEventToValues(event) }}
+      />
     </li>
   )
 }

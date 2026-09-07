@@ -14,6 +14,19 @@ import { WeekView } from './week-view'
 import { DayView } from './day-view'
 import { scheduleNextHearing } from '@/lib/matters/actions'
 import { rescheduleCaseEvent } from '@/lib/case-events/actions'
+import type { CaseEventType } from '@/lib/case-events/config'
+
+export type CalendarEventDetail = {
+  occurred_at: string
+  counsel: string | null
+  coram: string | null
+  set_for: string | null
+  next_date: string | null
+  next_set_for: string | null
+  notes: string | null
+  details: unknown
+  event_type: CaseEventType
+}
 
 export type CalendarItem = {
   id: string
@@ -23,6 +36,8 @@ export type CalendarItem = {
   fileRef: string
   matterId: string
   kind: string
+  // Present only for ev-* items — the full case_events row, for editing.
+  rawEvent?: CalendarEventDetail
 }
 
 const MONTHS = [

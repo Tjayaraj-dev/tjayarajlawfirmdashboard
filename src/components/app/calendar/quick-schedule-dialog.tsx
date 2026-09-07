@@ -25,30 +25,40 @@ export function QuickScheduleDialog({
   onOpenChange,
   matters,
   defaultDate,
+  defaultTime = '09:00',
+  matterId,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  matters: MatterOption[]
+  // Omit when editing a fixed matter's hearing (matterId given instead) —
+  // the picker only makes sense when scheduling from a blank calendar day.
+  matters?: MatterOption[]
   defaultDate: string
+  defaultTime?: string
+  // Fixed when editing an existing mt-* calendar item; otherwise pick a
+  // matter via `matters`.
+  matterId?: string
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [pickedClient, setPickedClient] = useState('')
   const [pickedMatter, setPickedMatter] = useState('')
   const [date, setDate] = useState(defaultDate)
-  const [time, setTime] = useState('09:00')
+  const [time, setTime] = useState(defaultTime)
+
+  const targetMatter = matterId ?? pickedMatter
 
   useEffect(() => {
     if (open) {
       setPickedClient('')
       setPickedMatter('')
       setDate(defaultDate)
-      setTime('09:00')
+      setTime(defaultTime)
     }
-  }, [open, defaultDate])
+  }, [open, defaultDate, defaultTime])
 
   const submit = () => {
-    if (!pickedMatter) {
+    if (!targetMatter) {
       toast.error('Select a matter first')
       return
     }
@@ -57,7 +67,7 @@ export function QuickScheduleDialog({
       return
     }
     startTransition(async () => {
-      const { error } = await scheduleNextHearing(pickedMatter, date, time)
+      const { error } = await scheduleNextHearing(targetMatter, date, time)
       if (error) {
         toast.error(error)
         return
@@ -73,7 +83,7 @@ export function QuickScheduleDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl font-light text-brand-navy">
-            Schedule a hearing
+            {matterId ? 'Edit hearing date' : 'Schedule a hearing'}
           </DialogTitle>
           <DialogDescription>
             Sets this matter&apos;s next hearing date. To log what happened at a proceeding,
@@ -82,13 +92,15 @@ export function QuickScheduleDialog({
         </DialogHeader>
 
         <div className="space-y-5">
-          <ClientMatterPicker
-            matters={matters}
-            clientId={pickedClient}
-            onClientChange={setPickedClient}
-            matterId={pickedMatter}
-            onMatterChange={setPickedMatter}
-          />
+          {!matterId && matters && (
+            <ClientMatterPicker
+              matters={matters}
+              clientId={pickedClient}
+              onClientChange={setPickedClient}
+              matterId={pickedMatter}
+              onMatterChange={setPickedMatter}
+            />
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">

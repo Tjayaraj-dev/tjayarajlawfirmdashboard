@@ -1,10 +1,10 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { ArrowRight, Trash2 } from 'lucide-react'
+import { ArrowRight, Pencil, Trash2 } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils'
 import { urgencyOf, URGENCY_RING } from '@/lib/calendar/urgency'
 import { softDeleteCaseEvent } from '@/lib/case-events/actions'
 import { clearNextHearing } from '@/lib/matters/actions'
+import { EventLogDialog, caseEventToValues } from '@/components/app/matters/event-log-dialog'
+import { QuickScheduleDialog } from './quick-schedule-dialog'
 import type { CalendarItem } from './calendar-board'
 
 const KIND_DOT: Record<string, string> = {
@@ -44,9 +46,16 @@ export function EventPopover({
   const urgency = urgencyOf(item.date, todayStr)
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [open, setOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const isEvent = item.id.startsWith('ev-')
+
+  const edit = () => {
+    setOpen(false)
+    setEditOpen(true)
+  }
 
   const remove = () => {
-    const isEvent = item.id.startsWith('ev-')
     const message = isEvent
       ? 'Archive this event? It is hidden, not destroyed.'
       : `Remove this hearing from the calendar for ${item.fileRef}?`
@@ -66,7 +75,7 @@ export function EventPopover({
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className={cn('block w-full text-left', className)}>
         {children}
       </PopoverTrigger>
@@ -101,16 +110,46 @@ export function EventPopover({
           >
             View matter <ArrowRight className="size-3" />
           </Link>
-          <button
-            type="button"
-            onClick={remove}
-            disabled={pending}
-            className="inline-flex items-center gap-1 text-xs font-medium text-destructive hover:text-destructive/80 disabled:opacity-50"
-          >
-            <Trash2 className="size-3" /> {pending ? 'Removing…' : 'Remove'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={edit}
+              className="inline-flex items-center gap-1 text-xs font-medium text-brand-navy hover:text-brand-gold"
+            >
+              <Pencil className="size-3" /> Edit
+            </button>
+            <button
+              type="button"
+              onClick={remove}
+              disabled={pending}
+              className="inline-flex items-center gap-1 text-xs font-medium text-destructive hover:text-destructive/80 disabled:opacity-50"
+            >
+              <Trash2 className="size-3" /> {pending ? 'Removing…' : 'Remove'}
+            </button>
+          </div>
         </div>
       </PopoverContent>
+
+      {isEvent && item.rawEvent ? (
+        <EventLogDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          matterId={item.matterId}
+          editingEvent={{
+            id: item.id.slice(3),
+            type: item.rawEvent.event_type,
+            values: caseEventToValues(item.rawEvent),
+          }}
+        />
+      ) : (
+        <QuickScheduleDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          matterId={item.matterId}
+          defaultDate={item.date}
+          defaultTime={item.time ?? '09:00'}
+        />
+      )}
     </Popover>
   )
 }
