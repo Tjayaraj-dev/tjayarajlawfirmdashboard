@@ -1,7 +1,10 @@
 'use client'
 
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { toast } from 'sonner'
+import { ArrowRight, Trash2 } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
@@ -9,6 +12,8 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { urgencyOf, URGENCY_RING } from '@/lib/calendar/urgency'
+import { softDeleteCaseEvent } from '@/lib/case-events/actions'
+import { clearNextHearing } from '@/lib/matters/actions'
 import type { CalendarItem } from './calendar-board'
 
 const KIND_DOT: Record<string, string> = {
@@ -37,6 +42,28 @@ export function EventPopover({
   children: React.ReactNode
 }) {
   const urgency = urgencyOf(item.date, todayStr)
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+
+  const remove = () => {
+    const isEvent = item.id.startsWith('ev-')
+    const message = isEvent
+      ? 'Archive this event? It is hidden, not destroyed.'
+      : `Remove this hearing from the calendar for ${item.fileRef}?`
+    if (!confirm(message)) return
+
+    startTransition(async () => {
+      const { error } = isEvent
+        ? await softDeleteCaseEvent(item.id.slice(3), item.matterId)
+        : await clearNextHearing(item.matterId)
+      if (error) {
+        toast.error(error)
+        return
+      }
+      toast.success('Removed from calendar')
+      router.refresh()
+    })
+  }
 
   return (
     <Popover>
@@ -67,12 +94,22 @@ export function EventPopover({
           {item.kind} · {formatDate(item.date)}
           {item.time ? ` · ${item.time}` : ' · All day'}
         </p>
-        <Link
-          href={`/matters/${item.matterId}`}
-          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand-navy hover:text-brand-gold"
-        >
-          View matter <ArrowRight className="size-3" />
-        </Link>
+        <div className="mt-1 flex items-center justify-between">
+          <Link
+            href={`/matters/${item.matterId}`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-brand-navy hover:text-brand-gold"
+          >
+            View matter <ArrowRight className="size-3" />
+          </Link>
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            className="inline-flex items-center gap-1 text-xs font-medium text-destructive hover:text-destructive/80 disabled:opacity-50"
+          >
+            <Trash2 className="size-3" /> {pending ? 'Removing…' : 'Remove'}
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   )

@@ -134,6 +134,22 @@ export async function scheduleNextHearing(
   return { error: null }
 }
 
+// Removes a matter's headline next hearing from the calendar (e.g. a wrongly
+// scheduled date) without touching anything else about the matter.
+export async function clearNextHearing(matterId: string): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('matters')
+    .update({ next_hearing_at: null })
+    .eq('id', matterId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/calendar')
+  revalidatePath('/matters')
+  revalidatePath(`/matters/${matterId}`)
+  return { error: null }
+}
+
 // Permanent delete (admin only). Cascades to this matter's case events and
 // documents. Storage objects purged first; audited before deletion.
 export async function hardDeleteMatter(id: string): Promise<ActionResult> {

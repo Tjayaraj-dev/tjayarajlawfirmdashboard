@@ -120,6 +120,7 @@ export async function softDeleteCaseEvent(
   if (error) return { error: error.message }
 
   revalidatePath(`/matters/${matterId}`)
+  revalidatePath('/calendar')
   return { error: null }
 }
 
