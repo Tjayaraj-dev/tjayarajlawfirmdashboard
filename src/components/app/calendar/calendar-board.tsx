@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { DndContext, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -67,6 +67,11 @@ export function CalendarBoard({
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [logOpen, setLogOpen] = useState(false)
   const [quickScheduleDate, setQuickScheduleDate] = useState<string | null>(null)
+
+  // Require real pointer movement before a drag starts — otherwise dnd-kit
+  // treats every click (mousedown/mouseup with near-zero jitter) as a drag
+  // attempt and the popover/edit click never fires.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   const byDate = useMemo(() => {
     const map = new Map<string, CalendarItem[]>()
@@ -160,7 +165,7 @@ export function CalendarBoard({
         />
       )}
 
-      <DndContext onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         {view === 'month' && (
           <MonthView cursor={cursor} byDate={byDate} todayStr={todayStr} onEmptyClick={setQuickScheduleDate} />
         )}
