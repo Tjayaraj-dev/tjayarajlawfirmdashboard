@@ -98,25 +98,23 @@ All three independent. PITR is what makes this truthful — on free tier we coul
 
 ## Project phases & status
 
-- [x] **Phase 0 — Proposal & onboarding doc sent.** Client onboarding doc issued; client filling.
-- [ ] **Phase A — Foundation (no client input needed).** Scaffold, schema, RLS, auth, app shell, deploy pipeline. *In progress.*
-- [ ] **Phase B — Generic CRUD.** Clients, matters, documents, audit log, soft-delete UI.
-- [ ] **Phase C — Client-specific config.** Practice areas, doc categories, users, branding, dashboard widgets. *Blocked on onboarding doc reply.*
-- [ ] **Phase D — Hardening & launch.** Security review, Playwright E2E, training, domain, handover.
+**Updated 2026-09-10 — this section was stale for a long time; corrected to match reality.**
 
-## What's blocked on the onboarding doc reply
+- [x] **Phase 0 — Proposal & onboarding doc sent.**
+- [x] **Phase A — Foundation.** Scaffold, schema, RLS, auth, app shell, deploy pipeline. Done.
+- [x] **Phase B — Generic CRUD.** Clients, matters, documents, audit log, soft-delete UI — all live (see route list in "Files of interest").
+- [x] **Phase C — Client-specific config, mostly.** Case types, courts, document categories, users, attendance/zoom/defence modules are all built and in real use with real firm data (`TJR/...`, `TJC/...` file refs). Whether this was driven by a formal onboarding doc reply or configured directly with Jayaraj isn't recorded — don't assume the "blocked" list below still applies without checking with Sanjay first.
+- [ ] **Phase D — Hardening & launch.** The app is **already live in production** at tjayaraj.com and being actively used/tested (see `docs/PROJECT_HANDOFF.md` for the live-testing feedback loop with the firm). Formal security review / E2E test suite / structured handover training may still be open — confirm current state with Sanjay rather than assuming.
 
-- Specific case-file custom fields beyond universal ones → `matters.custom_fields` jsonb
-- Practice area taxonomy (Civil / Conveyancing / Family / Corporate / etc.)
-- Document categories beyond the 6 universal defaults
-- User names + emails for invites
-- Specific access restrictions beyond admin/staff
-- Firm branding (logo, hex codes, fonts)
-- Sender email for notifications (e.g. `no-reply@jayarajco.com`)
-- Domain choice (top 3 preferences)
-- Sample test documents
+**For what's actually been built recently, known gotchas, and open threads, read `docs/PROJECT_HANDOFF.md` first — it's the up-to-date session log. This section only tracks the big-picture phase status.**
 
-When their reply lands, slotting in = 1-2 days, not a rebuild.
+## What might still be open from the original onboarding doc
+
+Unconfirmed whether these are resolved — check before assuming blocked:
+- Firm branding (logo, hex codes, fonts) beyond what's currently deployed
+- Sender email for notifications (`RESEND_FROM_EMAIL` — check Vercel env, not committed here)
+- Domain choice — currently live at tjayaraj.com, so likely resolved
+- Sample test documents / further custom fields beyond what `matters.custom_fields` already holds
 
 ## Coding conventions
 
@@ -129,21 +127,23 @@ When their reply lands, slotting in = 1-2 days, not a rebuild.
 - **Don't add fancy logging libraries.** Console + Supabase logs are enough. Audit log is the real audit trail.
 - **Before writing Next.js-specific code**, check `node_modules/next/dist/docs/` — Next.js 16 has breaking changes vs prior knowledge.
 
-## Files of interest (will populate as we build)
+## Files of interest
 
-- `src/app/` — Next.js routes (App Router)
-- `src/app/(auth)/` — login, signup, password reset
-- `src/app/(app)/` — protected admin + staff routes
-- `src/lib/supabase/` — server + browser + middleware clients
+- `src/app/(app)/` — protected admin + staff routes: overview, matters, clients, attendance, zoom, defence, documents, calendar, audit-log, users, case-types, courts, document-categories, settings
+- `src/app/(auth)/` — login, forgot-password
+- `src/app/api/health` — keep-alive ping (UptimeRobot hits this to stop Supabase free-tier auto-pause)
+- `src/app/api/cron/digest` — daily email digest (Vercel Cron, see `docs/PROJECT_HANDOFF.md`)
+- `src/lib/supabase/` — server (cookie-based) + browser + admin (service-role, cron-only) + middleware clients
 - `src/lib/auth/` — role types and guards
-- `src/middleware.ts` — auth gate
-- `supabase/migrations/` — SQL migrations (versioned)
-- `supabase/seed.sql` — default doc categories, dev users
-- `src/components/ui/` — shadcn primitives
+- `src/proxy.ts` — auth gate middleware (excludes `api/health`, `api/cron`)
+- `supabase/migrations/` — SQL migrations (versioned, 15+ as of 2026-09)
+- `src/components/ui/` — shadcn primitives, built on `@base-ui/react` (NOT Radix, NOT cmdk)
 - `src/components/app/` — feature components
+- `vercel.json` — cron schedule config
 
 ## Linked context (memory)
 
+- **`docs/PROJECT_HANDOFF.md` — read this first.** The up-to-date running log: what's been built recently, live-testing feedback loop, environment gotchas, open threads. Git-tracked so it survives a machine reset (unlike the memory files below, which are local to `~/.claude` and do NOT survive a reset).
 - User profile: `~/.claude/projects/.../memory/user_sanjay.md`
 - Project context: `~/.claude/projects/.../memory/project_jayaraj_law_erp.md`
 - Proposal PDF: `docs/proposal.pdf` (gitignored)
